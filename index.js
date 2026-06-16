@@ -18,7 +18,7 @@ const CHANNEL_ID = "1516405973365952633";
 const ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
-// ================= MAIN EMBED =================
+// ================= EMBEDS =================
 
 function mainEmbed(name, verse) {
 return new EmbedBuilder()
@@ -47,6 +47,8 @@ const prayers = [
 () => mainEmbed("العشاء", "وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ")
 ];
 
+const names = ["الفجر","الظهر","العصر","المغرب","العشاء"];
+
 // ================= BUTTONS =================
 
 function prayerButtons(name) {
@@ -63,52 +65,40 @@ new ButtonBuilder()
 );
 }
 
-// ================= AZKAR =================
+// ================= SAFE DETAILS =================
 
-const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
-
-2- يقول "وأنا أشهد أن لا إله إلا الله، وحده لا شريك له، وأن محمد عبده ورسوله، رضيت بالله ربًا، وبمحمدٍ رسولًا وبالإسلام دينًا". (( يقول ذلك عقب تشهد المؤذن))
-
-3- يصلي على النبي -صلى الله عليه وسلم- بعد فراغه من إجابة المؤذن
-
-4- اللهم رب هذه الدعوة التامة، والصلاة القائمة، آت محمدًا الوسيلة والفضيلة، وابعثه مقامًا محمودًا الذي وعدته، [ إنك لا تخلف الميعاد ]
-
-5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد`;
-
-// ================= DETAILS =================
-
-function prayerDetail(name) {
+function prayerDetail(key) {
 
 const virtue = {
-fajr: `صلاة الفجر من أعظم الصلوات التي تُظهر صدق الإيمان.
+fajr: `صلاة الفجر من أعظم الصلوات.
 
 « مَن صلَّى الصُّبحَ في جماعةٍ فَهوَ في ذمَّةِ اللَّهِ »
 
-📚 رواه الطبراني وصححه الألباني`,
+📚 الطبراني`,
 
-dhuhr: `صلاة الظهر فريضة عظيمة في وسط اليوم.
+dhuhr: `صلاة الظهر فريضة عظيمة.
 
 « إنَّها ساعةٌ تُفْتَحُ فيها أبوابُ السَّماءِ »
 
-📖 رواه الترمذي`,
+📖 الترمذي`,
 
-asr: `صلاة العصر هي الصلاة الوسطى.
+asr: `صلاة العصر هي الوسطى.
 
 « الَّذي تفوتُهُ صلاةُ العصرِ فأنَّما وُتِرَ أَهْلَهُ ومالَهُ »
 
-📚 رواه البخاري ومسلم`,
+📚 البخاري ومسلم`,
 
-maghrib: `صلاة المغرب ختام النهار.
+maghrib: `صلاة المغرب نور.
 
 « المحافظة على صلاة المغرب نور »
 
 📖 أثر حسن`,
 
-isha: `صلاة العشاء من أثقل الصلوات على المنافقين.
+isha: `صلاة العشاء عظيمة.
 
 « مَن صلَّى العِشاءَ في جماعةٍ فكأنَّما قامَ نِصفَ اللَّيلِ »
 
-📚 رواه مسلم`
+📚 مسلم`
 };
 
 const details = {
@@ -138,35 +128,105 @@ isha: `***صلاة العشاء***
 • السنة البعدية: 2`
 };
 
-return `${virtue[name]}
+return `${virtue[key] || "بيانات غير متوفرة"}
 
-${details[name]}`;
+${details[key] || ""}`;
 }
 
-// ================= BOT START =================
+// ================= INTERACTIONS (SAFE) =================
+
+client.on("interactionCreate", async (i) => {
+try {
+
+if (!i.isButton()) return;
+
+if (i.customId.startsWith("pray_")) {
+
+const key = i.customId.replace("pray_", "");
+
+return i.reply({
+ephemeral: true,
+embeds: [
+new EmbedBuilder()
+.setAuthor({
+name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
+iconURL: ICON
+})
+.setColor("#FFD700")
+.setFooter({
+text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
+iconURL: ICON
+})
+.setDescription(prayerDetail(key))
+]
+});
+}
+
+if (i.customId === "azkar") {
+return i.reply({
+ephemeral: true,
+embeds: [
+new EmbedBuilder()
+.setTitle("أذكــار الاذان")
+.setColor("#FFD700")
+.setAuthor({
+name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
+iconURL: ICON
+})
+.setDescription(`1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
+
+2- يقول "وأنا أشهد أن لا إله إلا الله، وحده لا شريك له، وأن محمد عبده ورسوله..."
+
+3- يصلي على النبي -صلى الله عليه وسلم-
+
+4- اللهم رب هذه الدعوة التامة...
+
+5- يدعو بين الأذان والإقامة`)
+.setFooter({
+text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
+iconURL: ICON
+})
+]
+});
+}
+
+} catch (err) {
+console.log("INTERACTION ERROR:", err);
+}
+});
+
+// ================= START (CRASH SAFE LOOP) =================
 
 client.once("ready", async () => {
-console.log("BOT READY - FAJR FIRST MODE");
+console.log("BOT READY SAFE VERSION");
 
-const channel = await client.channels.fetch(CHANNEL_ID);
+let channel;
+try {
+channel = await client.channels.fetch(CHANNEL_ID);
+} catch (e) {
+console.log("CHANNEL FETCH ERROR:", e);
+return;
+}
 
-// 🔥 STEP SYSTEM (FAJR FIRST THEN EVERY 1 MINUTE)
 let i = 0;
 
-// 1) Send FAJR immediately
+// 🔥 send immediately (FAJR)
+try {
 await channel.send({
 embeds: [prayers[0]()],
-components: [prayerButtons("الفجر")]
+components: [prayerButtons(names[0])]
 });
+} catch (e) {
+console.log("SEND ERROR:", e);
+}
 
 i = 1;
 
-// 2) Continue every 1 minute
+// 🔥 safe interval (no crash stop)
 setInterval(async () => {
+try {
 
 if (i >= prayers.length) return;
-
-const names = ["الفجر","الظهر","العصر","المغرب","العشاء"];
 
 await channel.send({
 embeds: [prayers[i]()],
@@ -174,6 +234,10 @@ components: [prayerButtons(names[i])]
 });
 
 i++;
+
+} catch (e) {
+console.log("INTERVAL SEND ERROR:", e);
+}
 
 }, 60000);
 
