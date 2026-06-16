@@ -22,11 +22,11 @@ const ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
 // ================= START TIME =================
-// 🔥 21:09 (9:09 PM Morocco)
+// 🔥 21:11 (9:11 PM Morocco)
 
 const startTime = DateTime.now()
 .setZone(TZ)
-.set({ hour: 21, minute: 9, second: 0, millisecond: 0 });
+.set({ hour: 21, minute: 11, second: 0, millisecond: 0 });
 
 // ================= MAIN EMBED =================
 
@@ -86,7 +86,7 @@ const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "ح
 
 5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد`;
 
-// ================= DETAILS (SAFE NO UNDEFINED) =================
+// ================= DETAILS =================
 
 function prayerDetail(name) {
 
@@ -149,6 +149,10 @@ isha: `***صلاة العشاء***
 • السنة البعدية: 2`
 };
 
+if (!virtue[name] || !details[name]) {
+return `خطأ: بيانات غير موجودة`;
+}
+
 return `${virtue[name]}
 
 ${details[name]}`;
@@ -205,7 +209,7 @@ iconURL: ICON
 // ================= SCHEDULER =================
 
 client.once("ready", async () => {
-console.log("BOT READY - 21:09 VERSION");
+console.log("BOT READY - 21:11 VERSION");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
 
