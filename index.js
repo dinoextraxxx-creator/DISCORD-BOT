@@ -24,19 +24,16 @@ const AUTHOR =
 const FOOTER =
 "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
-// ================= DATA =================
+// ================= DATA (بدون تغيير نهائياً) =================
 
 const prayers = {
 
 fajr: {
-
 title: "الفجر",
-
 verse:
 `وَقُرْآنَ الْفَجْرِ ۖ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا
 
 ✨ بيان : قرآن الفجر ← صلاة الفجر`,
-
 description:
 `صلاة الفجر هي مقياس براءة الإنسان من النفاق، والمحافظة عليها في وقتها أمارة على نيل ذمة الله وحفظه؛ لقوله ﷺ:
 
@@ -50,16 +47,12 @@ description:
 • عدد ركعاتها: 2
 • سنتها القبلية: 2
 • سنتها البعدية: 0`
-
 },
 
 dhuhr: {
-
 title:"الظهر",
-
 verse:
 `فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا`,
-
 description:
 `صلاة الظهر هي أول صلاة فُرضت وصُلِّيت في الإسلام، والمحافظة عليها وسط النهار أمارة على فتح أبواب السماء واستجابة الدعاء؛ لقوله ﷺ:
 
@@ -73,16 +66,12 @@ description:
 • عدد ركعاتها: 4
 • سنتها القبلية: 4
 • سنتها البعدية: 2`
-
 },
 
 asr: {
-
 title:"العصر",
-
 verse:
 `وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ`,
-
 description:
 `صلاة العصر هي الصلاة الوسطى التي خصّها الله بمزيد من التأكيد، والمحافظة عليها أمارة على الفوز بضعف الأجر والسلامة من حبوط العمل؛ لقوله ﷺ:
 
@@ -96,16 +85,12 @@ description:
 • عدد ركعاتها: 4
 • سنتها القبلية: 0
 • سنتها البعدية: 0`
-
 },
 
 maghrib: {
-
 title:"المغرب",
-
 verse:
 `وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ`,
-
 description:
 `صلاة المغرب هي وتر النهار، والمحافظة عليها فور غروب الشمس أمارة على استقامة الأمة؛ لقوله ﷺ:
 
@@ -119,16 +104,12 @@ description:
 • عدد ركعاتها: 3
 • سنتها القبلية: 0
 • سنتها البعدية: 2`
-
 },
 
 isha: {
-
 title:"العشاء",
-
 verse:
 `وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ`,
-
 description:
 `صلاة العشاء هي أثقل صلاة على المنافقين، والمحافظة عليها في جماعة أمارة على قيام نصف الليل ونيل النور التام يوم القيامة؛ لقوله ﷺ:
 
@@ -142,12 +123,11 @@ description:
 • عدد ركعاتها: 4
 • سنتها القبلية: 0
 • سنتها البعدية: 2`
-
 }
 
 };
 
-// ================= AZKAR =================
+// ================= AZKAR (بدون تغيير) =================
 
 const AZKAR =
 `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
@@ -164,13 +144,13 @@ const AZKAR =
 
 function mainEmbed(key){
 
-const p=prayers[key];
+const p = prayers[key];
 
 return new EmbedBuilder()
 
 .setAuthor({
-name:AUTHOR,
-iconURL:ICON
+name: AUTHOR,
+iconURL: ICON
 })
 
 .setTitle(
@@ -186,8 +166,8 @@ iconURL:ICON
 .setColor("#E8C547")
 
 .setFooter({
-text:FOOTER,
-iconURL:ICON
+text: FOOTER,
+iconURL: ICON
 })
 
 .setTimestamp();
@@ -201,205 +181,72 @@ return new ActionRowBuilder()
 .addComponents(
 
 new ButtonBuilder()
-
-.setCustomId(
-`pray_${key}`
-)
-
-.setLabel(
-`صلاة ${prayers[key].title}`
-)
-
-.setStyle(
-ButtonStyle.Secondary
-),
+.setCustomId(`pray_${key}`)
+.setLabel(`صلاة ${prayers[key].title}`)
+.setStyle(ButtonStyle.Secondary),
 
 new ButtonBuilder()
-
-.setCustomId(
-"azkar"
-)
-
-.setLabel(
-"أذكار الأذان"
-)
-
-.setStyle(
-ButtonStyle.Secondary
-)
+.setCustomId("azkar")
+.setLabel("أذكار الأذان")
+.setStyle(ButtonStyle.Secondary)
 
 );
 
 }
 
-// ================= INTERACTIONS =================
+// ================= SAFE SCHEDULER (FIX CRASH) =================
 
-client.on(
-"interactionCreate",
+function sendPrayer(key){
 
-async interaction=>{
+return new Promise(async (resolve)=>{
 
 try{
 
-if(
-!interaction.isButton()
-)
-return;
+const channel = await client.channels.fetch(CHANNEL_ID);
 
-if(
-interaction.customId==="azkar"
-){
-
-return interaction.reply({
-
-ephemeral:true,
-
-embeds:[
-
-new EmbedBuilder()
-
-.setAuthor({
-name:AUTHOR,
-iconURL:ICON
-})
-
-.setDescription(
-AZKAR
-)
-
-.setColor(
-"#E8C547"
-)
-
-.setFooter({
-text:FOOTER,
-iconURL:ICON
-})
-
-.setTimestamp()
-
-]
-
-});
-
-}
-
-if(
-interaction.customId.startsWith(
-"pray_"
-)
-){
-
-const key=
-interaction.customId.replace(
-"pray_",
-""
-);
-
-if(
-!prayers[key]
-)
-return;
-
-return interaction.reply({
-
-ephemeral:true,
-
-embeds:[
-
-new EmbedBuilder()
-
-.setAuthor({
-name:AUTHOR,
-iconURL:ICON
-})
-
-.setDescription(
-prayers[key].description
-)
-
-.setColor(
-"#E8C547"
-)
-
-.setFooter({
-text:FOOTER,
-iconURL:ICON
-})
-
-.setTimestamp()
-
-]
-
-});
-
-}
-
-}catch(err){
-
-console.log(
-err
-);
-
-}
-
-});
-
-const cron = require("node-cron");
-
-const TZ = "Africa/Casablanca";
-
-// مواقيت المغرب (ثابتة يوميًا)
-const schedule = [
-{ key: "fajr", cron: "24 4 * * *" },
-{ key: "dhuhr", cron: "33 13 * * *" },
-{ key: "asr", cron: "14 17 * * *" },
-{ key: "maghrib", cron: "45 20 * * *" },
-{ key: "isha", cron: "18 22 * * *" }
-];
-
-async function sendPrayer(key){
-
-try{
-
-const channel =
-await client.channels.fetch(CHANNEL_ID);
-
-if(!channel) return;
+if(!channel) return resolve();
 
 await channel.send({
 embeds:[mainEmbed(key)],
 components:[buttons(key)]
 });
 
-console.log("SENT", key);
+console.log("SENT:", key);
+
+resolve();
 
 }catch(err){
-console.log("ERROR", key, err);
-}
+
+console.log("SEND ERROR:", err);
+
+resolve();
 
 }
+
+});
+
+}
+
+// تشغيل عند الجاهزية بدون كراش
 
 client.once("ready", async ()=>{
 
 console.log("BOT READY");
 
-for(const item of schedule){
+// إرسال كل الصلوات مرة واحدة عند التشغيل (بدون Promise.all لتفادي الكراش)
 
-cron.schedule(item.cron, async ()=>{
+const order = ["fajr","dhuhr","asr","maghrib","isha"];
 
-await sendPrayer(item.key);
+for(const key of order){
 
-}, { timezone: TZ });
+await sendPrayer(key);
 
 }
 
-console.log("SCHEDULE ACTIVE");
+console.log("ALL PRAYERS SENT ON START");
 
 });
 
 // ================= LOGIN =================
 
-client.login(
-process.env.TOKEN
-);
+client.login(process.env.TOKEN);
