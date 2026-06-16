@@ -10,14 +10,19 @@ client.once("ready", async () => {
   try {
     const channel = await client.channels.fetch("1516072447219335415");
 
+    if (!channel) {
+      console.log("Channel not found");
+      return;
+    }
+
     const embed = new EmbedBuilder()
       .setTitle("📖 اختبار البوت")
-      .setDescription("البوت يعمل بشكل صحيح ✔");
+      .setDescription("البوت يعمل بنجاح ✔");
 
     await channel.send({ embeds: [embed] });
 
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Crash fixed error:", err);
   }
 });
 
