@@ -23,7 +23,6 @@ const ICON =
 
 function rowButtons() {
 return new ActionRowBuilder().addComponents(
-
 new ButtonBuilder()
 .setCustomId("prayer")
 .setLabel("صلاة")
@@ -33,78 +32,71 @@ new ButtonBuilder()
 .setCustomId("adhan")
 .setLabel("أذكار الأذان")
 .setStyle(ButtonStyle.Secondary)
-
 );
 }
 
 // ================= EMBEDS =================
 
-function fajr() {
+function baseEmbed(title, desc) {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
-.setTitle("حــان مــوعـد أذان صــلاة الفـجـر")
+.setTitle(title)
 .setColor("#FFD700")
-.setDescription(`قال الله تعالى :
+.setDescription(desc)
+.setFooter({ text: "قد تختلف مواعيد الصلاة من مدينة لأخرى", iconURL: ICON })
+.setTimestamp();
+}
+
+// FAJR
+const fajr = () =>
+baseEmbed(
+"حــان مــوعـد أذان صــلاة الفـجـر",
+`قال الله تعالى :
 
 ***﴿ وَقُرْآنَ الْفَجْرِ ۖ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا ﴾***
 
-قرآن الفجر : صلاة الفجر`)
-.setFooter({ text: "قد تختلف مواعيد الصلاة من مدينة لأخرى", iconURL: ICON })
-.setTimestamp();
-}
+قرآن الفجر : صلاة الفجر`
+);
 
-function dhuhr() {
-return new EmbedBuilder()
-.setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
-.setTitle("حــان مــوعـد أذان صــلاة الــظــهــر")
-.setColor("#FFD700")
-.setDescription(`قال الله تعالى :
+// DHUHR
+const dhuhr = () =>
+baseEmbed(
+"حــان مــوعـد أذان صــلاة الــظــهــر",
+`قال الله تعالى :
 
-***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾***`)
-.setFooter({ text: "قد تختلف مواعيد الصلاة من مدينة لأخرى", iconURL: ICON })
-.setTimestamp();
-}
+***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾***`
+);
 
-function asr() {
-return new EmbedBuilder()
-.setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
-.setTitle("حــان مــوعـد أذان صــلاة الــعــصــر")
-.setColor("#FFD700")
-.setDescription(`قال الله تعالى :
+// ASR
+const asr = () =>
+baseEmbed(
+"حــان مــوعـد أذان صــلاة الــعــصــر",
+`قال الله تعالى :
 
-***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`)
-.setFooter({ text: "قد تختلف مواعيد الصلاة من مدينة لأخرى", iconURL: ICON })
-.setTimestamp();
-}
+***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
+);
 
-function maghrib() {
-return new EmbedBuilder()
-.setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
-.setTitle("حــان مــوعـد أذان صــلاة الــمــغــرب")
-.setColor("#FFD700")
-.setDescription(`قال الله تعالى :
+// MAGHRIB
+const maghrib = () =>
+baseEmbed(
+"حــان مــوعـد أذان صــلاة الــمــغــرب",
+`قال الله تعالى :
 
-***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ۚ إِنَّ الْحَسَنَاتِ يُذْهِبْنَ السَّيِّئَاتِ ۚ ذَٰلِكَ ذِكْرَىٰ لِلَّذَّاكِرِينَ﴾***`)
-.setFooter({ text: "قد تختلف مواعيد الصلاة من مدينة لأخرى", iconURL: ICON })
-.setTimestamp();
-}
+***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ۚ إِنَّ الْحَسَنَاتِ يُذْهِبْنَ السَّيِّئَاتِ ۚ ذَٰلِكَ ذِكْرَىٰ لِلَّذَّاكِرِينَ﴾***`
+);
 
-function isha() {
-return new EmbedBuilder()
-.setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
-.setTitle("حــان مــوعـد أذان صــلاة الــعــشــاء")
-.setColor("#FFD700")
-.setDescription(`قال الله تعالى :
+// ISHA
+const isha = () =>
+baseEmbed(
+"حــان مــوعـد أذان صــلاة الــعــشــاء",
+`قال الله تعالى :
 
-***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`)
-.setFooter({ text: "قد تختلف مواعيد الصلاة من مدينة لأخرى", iconURL: ICON })
-.setTimestamp();
-}
+***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
+);
 
-// ================= BUTTONS =================
+// ================= INTERACTIONS =================
 
 client.on("interactionCreate", async (i) => {
-
 if (!i.isButton()) return;
 
 if (i.customId === "prayer") {
@@ -129,55 +121,47 @@ new EmbedBuilder()
 
 5- الدعاء بين الأذان والإقامة`)
 .setFooter({ text: "4KO • YONKO.مُـــذَكّــــــر", iconURL: ICON })
-.setTimestamp()
 ]
 });
 }
-
 });
 
-// ================= SCHEDULER (START 17:53) =================
+// ================= SCHEDULER (0.5 FIXED) =================
 
 client.once("ready", async () => {
 console.log("BOT READY");
 
-const prayers = [
-fajr,
-dhuhr,
-asr,
-maghrib,
-isha
-];
+const channel = await client.channels.fetch(CHANNEL_ID);
 
-let sent = new Set();
+const prayers = [fajr, dhuhr, asr, maghrib, isha];
 
-setInterval(async () => {
+// بداية التشغيل 06:06
+const start = DateTime.fromObject(
+{
+hour: 6,
+minute: 6,
+second: 0,
+millisecond: 0
+},
+{ zone: TZ }
+);
 
-const now = DateTime.now().setZone(TZ);
+for (let i = 0; i < prayers.length; i++) {
 
-// البداية 17:53
-const base = now.set({
-hour: 17,
-minute: 53,
-second: 0
-});
+const target = start.plus({ minutes: i });
 
-const diff = Math.floor(now.diff(base, "minutes").minutes);
+const delay = target.diff(DateTime.now().setZone(TZ)).toMillis();
 
-if (diff < 0 || diff > 4) return;
+if (delay < 0) continue;
 
-if (!sent.has(diff)) {
-sent.add(diff);
-
-const ch = await client.channels.fetch(CHANNEL_ID);
-
-await ch.send({
-embeds: [prayers[diff]()],
+setTimeout(async () => {
+await channel.send({
+embeds: [prayers[i]()],
 components: [rowButtons()]
 });
-}
+}, delay);
 
-}, 1000);
+}
 
 });
 
