@@ -1,4 +1,3 @@
-
 const {
 Client,
 GatewayIntentBits,
@@ -38,9 +37,8 @@ new ButtonBuilder()
 );
 }
 
-// ================= MAIN EMBEDS =================
+// ================= EMBEDS =================
 
-// FAJR
 function fajr() {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
@@ -55,7 +53,6 @@ return new EmbedBuilder()
 .setTimestamp();
 }
 
-// DHUHR
 function dhuhr() {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
@@ -68,7 +65,6 @@ return new EmbedBuilder()
 .setTimestamp();
 }
 
-// ASR
 function asr() {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
@@ -81,7 +77,6 @@ return new EmbedBuilder()
 .setTimestamp();
 }
 
-// MAGHRIB
 function maghrib() {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
@@ -94,7 +89,6 @@ return new EmbedBuilder()
 .setTimestamp();
 }
 
-// ISHA
 function isha() {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
@@ -107,17 +101,14 @@ return new EmbedBuilder()
 .setTimestamp();
 }
 
-// ================= BUTTON RESPONSES =================
+// ================= BUTTONS =================
 
 client.on("interactionCreate", async (i) => {
 
 if (!i.isButton()) return;
 
 if (i.customId === "prayer") {
-return i.reply({
-ephemeral: true,
-embeds: [fajr()]
-});
+return i.reply({ ephemeral: true, embeds: [fajr()] });
 }
 
 if (i.customId === "adhan") {
@@ -145,18 +136,10 @@ new EmbedBuilder()
 
 });
 
-// ================= TEST SCHEDULER (0.5) =================
+// ================= SCHEDULER (START 17:53) =================
 
 client.once("ready", async () => {
 console.log("BOT READY");
-
-const base = DateTime.now()
-.setZone(TZ)
-.set({
-hour: 17,
-minute: 51,
-second: 0
-});
 
 const prayers = [
 fajr,
@@ -166,31 +149,37 @@ maghrib,
 isha
 ];
 
-for (let i = 0; i < prayers.length; i++) {
+let sent = new Set();
 
-const runTime = base.plus({ minutes: i });
-const delay = runTime.diffNow().toMillis();
+setInterval(async () => {
 
-if (delay > 0) {
-setTimeout(() => {
-send(prayers[i]);
-}, delay);
-}
+const now = DateTime.now().setZone(TZ);
 
-}
-
+// البداية 17:53
+const base = now.set({
+hour: 17,
+minute: 53,
+second: 0
 });
 
-// ================= SEND FUNCTION =================
+const diff = Math.floor(now.diff(base, "minutes").minutes);
 
-async function send(fn) {
+if (diff < 0 || diff > 4) return;
+
+if (!sent.has(diff)) {
+sent.add(diff);
+
 const ch = await client.channels.fetch(CHANNEL_ID);
 
 await ch.send({
-embeds: [fn()],
+embeds: [prayers[diff]()],
 components: [rowButtons()]
 });
 }
+
+}, 1000);
+
+});
 
 // ================= LOGIN =================
 
