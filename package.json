@@ -1,91 +1,12 @@
-const {
-Client,
-GatewayIntentBits,
-EmbedBuilder
-} = require("discord.js");
-
-const { DateTime } = require("luxon");
-
-const client = new Client({
-intents: [GatewayIntentBits.Guilds]
-});
-
-const CHANNEL_ID = "1516405973365952633";
-const TZ = "Africa/Casablanca";
-
-const ICON = "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
-
-// ================= BASE =================
-
-function base(title, desc) {
-return new EmbedBuilder()
-.setAuthor({
-name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
-iconURL: ICON
-})
-.setTitle(title + " حسب التوقيت المحلي لمدينة الرباط")
-.setColor("#FFD700")
-.setDescription(desc)
-.setFooter({
-text: "قد تختلف مواعيد الصلاة من مدينة لأخرى",
-iconURL: ICON
-})
-.setTimestamp();
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "luxon": "^3.0.0"
+  }
 }
-
-// ================= PRAYERS =================
-
-const prayers = [
-() => base("الفجر", "***﴿ وَقُرْآنَ الْفَجْرِ ۖ ﴾***"),
-() => base("الظهر", "***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ ﴾***"),
-() => base("العصر", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***"),
-() => base("المغرب", "***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ ۚ ﴾***"),
-() => base("العشاء", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***")
-];
-
-// ================= START =================
-
-client.once("ready", async () => {
-console.log("JACKSON READY");
-
-const channel = await client.channels.fetch(CHANNEL_ID);
-
-// 🔥 START: TODAY 19:15 (7:15 PM Morocco)
-const startTime = DateTime.now()
-.setZone(TZ)
-.set({
-hour: 19,
-minute: 15,
-second: 0,
-millisecond: 0
-});
-
-let sent = new Set();
-
-setInterval(async () => {
-
-const now = DateTime.now().setZone(TZ);
-
-for (let i = 0; i < prayers.length; i++) {
-
-const target = startTime.plus({ minutes: i });
-
-const key = `${now.toFormat("yyyy-MM-dd")}-${i}`;
-
-const diff = now.diff(target, "seconds").seconds;
-
-if (diff < 0 || diff >= 60) continue;
-if (sent.has(key)) continue;
-
-sent.add(key);
-
-await channel.send({
-embeds: [prayers[i]()]
-});
-}
-
-}, 1000);
-
-});
-
-client.login(process.env.TOKEN);
