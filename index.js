@@ -7,8 +7,6 @@ ButtonBuilder,
 ButtonStyle
 } = require("discord.js");
 
-const { DateTime } = require("luxon");
-
 const client = new Client({
 intents: [GatewayIntentBits.Guilds]
 });
@@ -16,17 +14,9 @@ intents: [GatewayIntentBits.Guilds]
 // ================= CONFIG =================
 
 const CHANNEL_ID = "1516405973365952633";
-const TZ = "Africa/Casablanca";
 
 const ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
-
-// ================= START TIME =================
-// 🔥 21:11 (9:11 PM Morocco)
-
-const startTime = DateTime.now()
-.setZone(TZ)
-.set({ hour: 21, minute: 11, second: 0, millisecond: 0 });
 
 // ================= MAIN EMBED =================
 
@@ -44,8 +34,7 @@ iconURL: ICON
 .setFooter({
 text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
 iconURL: ICON
-})
-.setTimestamp();
+});
 }
 
 // ================= PRAYERS =================
@@ -97,19 +86,19 @@ fajr: `صلاة الفجر من أعظم الصلوات التي تُظهر صد
 
 📚 رواه الطبراني وصححه الألباني`,
 
-dhuhr: `صلاة الظهر من الصلوات التي تُقام في وسط اليوم.
+dhuhr: `صلاة الظهر فريضة عظيمة في وسط اليوم.
 
 « إنَّها ساعةٌ تُفْتَحُ فيها أبوابُ السَّماءِ »
 
-📖 رواه الترمذي وصححه الألباني`,
+📖 رواه الترمذي`,
 
-asr: `صلاة العصر هي الصلاة الوسطى التي عظّمها الله.
+asr: `صلاة العصر هي الصلاة الوسطى.
 
 « الَّذي تفوتُهُ صلاةُ العصرِ فأنَّما وُتِرَ أَهْلَهُ ومالَهُ »
 
 📚 رواه البخاري ومسلم`,
 
-maghrib: `صلاة المغرب ختام النهار وبداية السكون.
+maghrib: `صلاة المغرب ختام النهار.
 
 « المحافظة على صلاة المغرب نور »
 
@@ -149,89 +138,44 @@ isha: `***صلاة العشاء***
 • السنة البعدية: 2`
 };
 
-if (!virtue[name] || !details[name]) {
-return `خطأ: بيانات غير موجودة`;
-}
-
 return `${virtue[name]}
 
 ${details[name]}`;
 }
 
-// ================= INTERACTIONS =================
-
-client.on("interactionCreate", async (i) => {
-if (!i.isButton()) return;
-
-if (i.customId.startsWith("pray_")) {
-
-const name = i.customId.replace("pray_", "");
-
-return i.reply({
-ephemeral: true,
-embeds: [
-new EmbedBuilder()
-.setAuthor({
-name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
-iconURL: ICON
-})
-.setColor("#FFD700")
-.setFooter({
-text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
-iconURL: ICON
-})
-.setDescription(prayerDetail(name))
-]
-});
-}
-
-if (i.customId === "azkar") {
-return i.reply({
-ephemeral: true,
-embeds: [
-new EmbedBuilder()
-.setTitle("أذكــار الاذان")
-.setColor("#FFD700")
-.setAuthor({
-name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
-iconURL: ICON
-})
-.setDescription(azkar)
-.setFooter({
-text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
-iconURL: ICON
-})
-]
-});
-}
-});
-
-// ================= SCHEDULER =================
+// ================= BOT START =================
 
 client.once("ready", async () => {
-console.log("BOT READY - 21:11 VERSION");
+console.log("BOT READY - FAJR FIRST MODE");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
 
+// 🔥 STEP SYSTEM (FAJR FIRST THEN EVERY 1 MINUTE)
+let i = 0;
+
+// 1) Send FAJR immediately
+await channel.send({
+embeds: [prayers[0]()],
+components: [prayerButtons("الفجر")]
+});
+
+i = 1;
+
+// 2) Continue every 1 minute
 setInterval(async () => {
 
-const now = DateTime.now().setZone(TZ);
+if (i >= prayers.length) return;
 
-for (let i = 0; i < prayers.length; i++) {
-
-const target = startTime.plus({ minutes: i });
-
-const diff = now.diff(target, "seconds").seconds;
-
-if (diff < 0 || diff >= 60) continue;
+const names = ["الفجر","الظهر","العصر","المغرب","العشاء"];
 
 await channel.send({
 embeds: [prayers[i]()],
-components: [prayerButtons(["الفجر","الظهر","العصر","المغرب","العشاء"][i])]
+components: [prayerButtons(names[i])]
 });
-}
 
-}, 1000);
+i++;
+
+}, 60000);
 
 });
 
