@@ -24,7 +24,7 @@ const AUTHOR =
 const FOOTER =
 "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
-// ================= DATA (بدون تغيير نهائياً) =================
+// ================= PRAYERS =================
 
 const prayers = {
 
@@ -127,7 +127,7 @@ description:
 
 };
 
-// ================= AZKAR (بدون تغيير) =================
+// ================= AZKAR =================
 
 const AZKAR =
 `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
@@ -140,45 +140,25 @@ const AZKAR =
 
 5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد`;
 
-// ================= BUILDERS =================
+// ================= EMBEDS =================
 
 function mainEmbed(key){
 
 const p = prayers[key];
 
 return new EmbedBuilder()
-
-.setAuthor({
-name: AUTHOR,
-iconURL: ICON
-})
-
-.setTitle(
-`حان موعد أذان صلاة ${p.title} حسب التوقيت المحلي لمدينة الرباط`
-)
-
-.setDescription(
-`قال تعالى :
-
-***﴿ ${p.verse} ﴾***`
-)
-
+.setAuthor({ name: AUTHOR, iconURL: ICON })
+.setTitle(`حان موعد أذان صلاة ${p.title} حسب التوقيت المحلي لمدينة الرباط`)
+.setDescription(`قال تعالى :\n\n***﴿ ${p.verse} ﴾***`)
 .setColor("#E8C547")
-
-.setFooter({
-text: FOOTER,
-iconURL: ICON
-})
-
+.setFooter({ text: FOOTER, iconURL: ICON })
 .setTimestamp();
 
 }
 
 function buttons(key){
 
-return new ActionRowBuilder()
-
-.addComponents(
+return new ActionRowBuilder().addComponents(
 
 new ButtonBuilder()
 .setCustomId(`pray_${key}`)
@@ -194,17 +174,14 @@ new ButtonBuilder()
 
 }
 
-// ================= SAFE SCHEDULER (FIX CRASH) =================
+// ================= SEND =================
 
-function sendPrayer(key){
-
-return new Promise(async (resolve)=>{
+async function sendPrayer(key){
 
 try{
 
 const channel = await client.channels.fetch(CHANNEL_ID);
-
-if(!channel) return resolve();
+if(!channel) return;
 
 await channel.send({
 embeds:[mainEmbed(key)],
@@ -213,37 +190,128 @@ components:[buttons(key)]
 
 console.log("SENT:", key);
 
-resolve();
-
 }catch(err){
-
-console.log("SEND ERROR:", err);
-
-resolve();
+console.log("ERROR:", err);
+}
 
 }
+
+// ================= DAILY SYSTEM =================
+
+const schedule = [
+{ key: "fajr", hour: 4, minute: 24 },
+{ key: "dhuhr", hour: 13, minute: 33 },
+{ key: "asr", hour: 17, minute: 14 },
+{ key: "maghrib", hour: 20, minute: 45 },
+{ key: "isha", hour: 22, minute: 18 }
+];
+
+function getDelay(hour, minute){
+
+const now = new Date();
+const target = new Date();
+
+target.setHours(hour);
+target.setMinutes(minute);
+target.setSeconds(0);
+
+if(target < now){
+target.setDate(target.getDate() + 1);
+}
+
+return target - now;
+
+}
+
+function startSchedule(){
+
+for(const item of schedule){
+
+const delay = getDelay(item.hour, item.minute);
+
+setTimeout(()=>{
+
+sendPrayer(item.key);
+
+setInterval(()=>{
+
+sendPrayer(item.key);
+
+}, 24 * 60 * 60 * 1000);
+
+}, delay);
+
+}
+
+console.log("DAILY SCHEDULE ACTIVE");
+
+}
+
+// ================= INTERACTIONS =================
+
+client.on("interactionCreate", async interaction=>{
+
+try{
+
+if(!interaction.isButton()) return;
+
+if(interaction.customId === "azkar"){
+
+return interaction.reply({
+
+ephemeral:true,
+embeds:[
+
+new EmbedBuilder()
+.setAuthor({ name: AUTHOR, iconURL: ICON })
+.setDescription(AZKAR)
+.setColor("#E8C547")
+.setFooter({ text: FOOTER, iconURL: ICON })
+.setTimestamp()
+
+]
 
 });
 
 }
 
-// تشغيل عند الجاهزية بدون كراش
+if(interaction.customId.startsWith("pray_")){
 
-client.once("ready", async ()=>{
+const key = interaction.customId.replace("pray_","");
 
-console.log("BOT READY");
+if(!prayers[key]) return;
 
-// إرسال كل الصلوات مرة واحدة عند التشغيل (بدون Promise.all لتفادي الكراش)
+return interaction.reply({
 
-const order = ["fajr","dhuhr","asr","maghrib","isha"];
+ephemeral:true,
+embeds:[
 
-for(const key of order){
+new EmbedBuilder()
+.setAuthor({ name: AUTHOR, iconURL: ICON })
+.setDescription(prayers[key].description)
+.setColor("#E8C547")
+.setFooter({ text: FOOTER, iconURL: ICON })
+.setTimestamp()
 
-await sendPrayer(key);
+]
+
+});
 
 }
 
-console.log("ALL PRAYERS SENT ON START");
+}catch(err){
+console.log(err);
+}
+
+});
+
+// ================= READY =================
+
+client.once("ready", ()=>{
+
+console.log("BOT READY");
+
+startSchedule();
 
 });
 
