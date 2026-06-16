@@ -35,9 +35,9 @@ new ButtonBuilder()
 );
 }
 
-// ================= EMBEDS =================
+// ================= BASE EMBED =================
 
-function baseEmbed(title, desc) {
+function base(title, desc) {
 return new EmbedBuilder()
 .setAuthor({ name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة", iconURL: ICON })
 .setTitle(title)
@@ -47,9 +47,10 @@ return new EmbedBuilder()
 .setTimestamp();
 }
 
-// FAJR
+// ================= PRAYERS =================
+
 const fajr = () =>
-baseEmbed(
+base(
 "حــان مــوعـد أذان صــلاة الفـجـر",
 `قال الله تعالى :
 
@@ -58,43 +59,39 @@ baseEmbed(
 قرآن الفجر : صلاة الفجر`
 );
 
-// DHUHR
 const dhuhr = () =>
-baseEmbed(
+base(
 "حــان مــوعـد أذان صــلاة الــظــهــر",
 `قال الله تعالى :
 
 ***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾***`
 );
 
-// ASR
 const asr = () =>
-baseEmbed(
+base(
 "حــان مــوعـد أذان صــلاة الــعــصــر",
 `قال الله تعالى :
 
 ***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
 );
 
-// MAGHRIB
 const maghrib = () =>
-baseEmbed(
+base(
 "حــان مــوعـد أذان صــلاة الــمــغــرب",
 `قال الله تعالى :
 
 ***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ۚ إِنَّ الْحَسَنَاتِ يُذْهِبْنَ السَّيِّئَاتِ ۚ ذَٰلِكَ ذِكْرَىٰ لِلَّذَّاكِرِينَ﴾***`
 );
 
-// ISHA
 const isha = () =>
-baseEmbed(
+base(
 "حــان مــوعـد أذان صــلاة الــعــشــاء",
 `قال الله تعالى :
 
 ***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
 );
 
-// ================= INTERACTIONS =================
+// ================= BUTTON INTERACTIONS =================
 
 client.on("interactionCreate", async (i) => {
 if (!i.isButton()) return;
@@ -126,7 +123,7 @@ new EmbedBuilder()
 }
 });
 
-// ================= SCHEDULER (0.5 FIXED) =================
+// ================= SCHEDULER (0.5 TEST MODE) =================
 
 client.once("ready", async () => {
 console.log("BOT READY");
@@ -135,33 +132,39 @@ const channel = await client.channels.fetch(CHANNEL_ID);
 
 const prayers = [fajr, dhuhr, asr, maghrib, isha];
 
-// بداية التشغيل 06:06
-const start = DateTime.fromObject(
-{
-hour: 6,
-minute: 6,
+// بداية التجربة: 18:13
+const START_HOUR = 18;
+const START_MINUTE = 13;
+
+let sent = new Set();
+
+setInterval(async () => {
+
+const now = DateTime.now().setZone(TZ);
+
+const base = now.set({
+hour: START_HOUR,
+minute: START_MINUTE,
 second: 0,
 millisecond: 0
-},
-{ zone: TZ }
-);
+});
 
-for (let i = 0; i < prayers.length; i++) {
+const diff = Math.floor(now.diff(base, "minutes").minutes);
 
-const target = start.plus({ minutes: i });
+if (diff < 0 || diff > 4) return;
 
-const delay = target.diff(DateTime.now().setZone(TZ)).toMillis();
+if (sent.has(diff)) return;
 
-if (delay < 0) continue;
+sent.add(diff);
 
-setTimeout(async () => {
+console.log("Sending prayer:", diff);
+
 await channel.send({
-embeds: [prayers[i]()],
+embeds: [prayers[diff]()],
 components: [rowButtons()]
 });
-}, delay);
 
-}
+}, 1000);
 
 });
 
