@@ -13,24 +13,29 @@ const client = new Client({
 intents: [GatewayIntentBits.Guilds]
 });
 
+// ================= CONFIG =================
+
 const CHANNEL_ID = "1516405973365952633";
 const TZ = "Africa/Casablanca";
 
-const ICON = "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
+const ICON =
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
 // ================= BASE =================
 
-function base(title, desc) {
+function mainEmbed(title, verse) {
 return new EmbedBuilder()
 .setAuthor({
 name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
 iconURL: ICON
 })
-.setTitle(title + " حسب التوقيت المحلي لمدينة الرباط")
+.setTitle(`حان موعد أذان صلاة ${title} حسب التوقيت المحلي لمدينة الرباط`)
 .setColor("#FFD700")
-.setDescription(desc)
+.setDescription(`قال تعالى :
+
+${verse}`)
 .setFooter({
-text: "قد تختلف مواعيد الصلاة من مدينة لأخرى",
+text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
 iconURL: ICON
 })
 .setTimestamp();
@@ -39,20 +44,20 @@ iconURL: ICON
 // ================= PRAYERS =================
 
 const prayers = [
-() => base("الفجر", "***﴿ وَقُرْآنَ الْفَجْرِ ۖ ﴾***"),
-() => base("الظهر", "***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ ﴾***"),
-() => base("العصر", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***"),
-() => base("المغرب", "***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ ۚ ﴾***"),
-() => base("العشاء", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***")
+() => mainEmbed("الفجر", "***﴿ وَقُرْآنَ الْفَجْرِ ۖ ﴾***"),
+() => mainEmbed("الظهر", "***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ ﴾***"),
+() => mainEmbed("العصر", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***"),
+() => mainEmbed("المغرب", "***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ ۚ ﴾***"),
+() => mainEmbed("العشاء", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***")
 ];
 
 // ================= BUTTONS =================
 
-function rowButtons() {
+function rowButtons(prayerName) {
 return new ActionRowBuilder().addComponents(
 new ButtonBuilder()
-.setCustomId("pray")
-.setLabel("صلاة الفجر")
+.setCustomId(`pray_${prayerName}`)
+.setLabel(`صلاة ${prayerName}`)
 .setStyle(ButtonStyle.Secondary),
 
 new ButtonBuilder()
@@ -66,7 +71,7 @@ new ButtonBuilder()
 
 const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
 
-2- يقول الشهادة بعد المؤذن
+2- يقول الشهادة بعد الأذان
 
 3- يصلي على النبي ﷺ
 
@@ -79,10 +84,20 @@ const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "ح
 client.on("interactionCreate", async (i) => {
 if (!i.isButton()) return;
 
-if (i.customId === "pray") {
+if (i.customId.startsWith("pray_")) {
+const name = i.customId.replace("pray_", "");
+
+const map = {
+الفجر: 0,
+الظهر: 1,
+العصر: 2,
+المغرب: 3,
+العشاء: 4
+};
+
 return i.reply({
 ephemeral: true,
-embeds: [prayers[0]()]
+embeds: [prayers[map[name]]()]
 });
 }
 
@@ -95,32 +110,38 @@ new EmbedBuilder()
 .setColor("#FFD700")
 .setAuthor({ name: "مُـــذَكّــــــر", iconURL: ICON })
 .setDescription(azkar)
-.setFooter({ text: "4KO • YONKO.مُـــذَكّــــــر", iconURL: ICON })
+.setFooter({
+text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
+iconURL: ICON
+})
 ]
 });
 }
 });
 
-// ================= SCHEDULER =================
+// ================= READY =================
 
 client.once("ready", async () => {
 console.log("INDEX READY");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
 
-// 🔥 START: TODAY 19:15 (7:15 PM Morocco)
+// 🔥 START TIME: 19:42
 const startTime = DateTime.now()
 .setZone(TZ)
 .set({
 hour: 19,
-minute: 15,
+minute: 42,
 second: 0,
 millisecond: 0
 });
 
 let sent = new Set();
+let finished = false;
 
 setInterval(async () => {
+
+if (finished) return;
 
 const now = DateTime.now().setZone(TZ);
 
@@ -139,8 +160,12 @@ sent.add(key);
 
 await channel.send({
 embeds: [prayers[i]()],
-components: [rowButtons()]
+components: [rowButtons(Object.keys(prayers)[i])]
 });
+
+if (i === prayers.length - 1) {
+finished = true;
+}
 }
 
 }, 1000);
