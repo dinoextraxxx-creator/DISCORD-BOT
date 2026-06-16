@@ -1,21 +1,23 @@
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require("discord.js");
+const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log("Bot is ready");
-});
 
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isButton()) return;
+  try {
+    const channel = await client.channels.fetch("1516072447219335415");
 
-  if (interaction.customId === "hadith") {
-    await interaction.reply({
-      content: "📜 هذا حديث خاص لك فقط",
-      ephemeral: true
-    });
+    const embed = new EmbedBuilder()
+      .setTitle("📖 اختبار البوت")
+      .setDescription("إذا ظهرت هذه الرسالة، فالبوت يعمل بشكل صحيح ✔");
+
+    await channel.send({ embeds: [embed] });
+
+  } catch (err) {
+    console.error("Error sending message:", err);
   }
 });
 
