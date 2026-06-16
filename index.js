@@ -94,7 +94,19 @@ base("حان موعد أذان صلاة العشاء",
 ***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
 );
 
-// ================= BUTTON HANDLER =================
+// ================= AZKAR BUTTON =================
+
+const azkarAzan = `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
+
+2- يقول "وأنا أشهد أن لا إله إلا الله، وحده لا شريك له، وأن محمد عبده ورسوله، رضيت بالله ربًا، وبمحمدٍ رسولًا وبالإسلام دينًا". (( يقول ذلك عقب تشهد المؤذن))
+
+3- يصلي على النبي -صلى الله عليه وسلم- بعد فراغه من إجابة المؤذن
+
+4- اللهم رب هذه الدعوة التامة، والصلاة القائمة، آت محمدًا الوسيلة والفضيلة، وابعثه مقامًا محمودًا الذي وعدته، [ إنك لا تخلف الميعاد ]
+
+5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد`;
+
+// ================= INTERACTIONS =================
 
 client.on("interactionCreate", async (i) => {
 if (!i.isButton()) return;
@@ -114,15 +126,7 @@ new EmbedBuilder()
 .setTitle("أذكــــار الأذان")
 .setColor("#FFD700")
 .setAuthor({ name: "مُـــذَكّــــــر", iconURL: ICON })
-.setDescription(`1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
-
-2- يقول "وأنا أشهد أن لا إله إلا الله، وحده لا شريك له، وأن محمد عبده ورسوله، رضيت بالله ربًا، وبمحمدٍ رسولًا وبالإسلام دينًا". (( يقول ذلك عقب تشهد المؤذن))
-
-3- يصلي على النبي -صلى الله عليه وسلم- بعد فراغه من إجابة المؤذن
-
-4- اللهم رب هذه الدعوة التامة، والصلاة القائمة، آت محمدًا الوسيلة والفضيلة، وابعثه مقامًا محمودًا الذي وعدته، [ إنك لا تخلف الميعاد ]
-
-5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد`)
+.setDescription(azkarAzan)
 .setFooter({ text: "4KO • YONKO.مُـــذَكّــــــر", iconURL: ICON })
 ]
 });
@@ -132,21 +136,19 @@ new EmbedBuilder()
 // ================= SCHEDULER =================
 
 client.once("ready", async () => {
-
-console.log("BOT READY (TRIAL 18:48)");
+console.log("BOT STARTED");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
 
 const prayers = [fajr, dhuhr, asr, maghrib, isha];
 
-// 🔥 بداية التجربة: 18:48
+// 🔥 START TIME: 18:53 (Morocco)
 const START_HOUR = 18;
-const START_MINUTE = 48;
+const START_MINUTE = 53;
 
 let sent = new Set();
 
 setInterval(async () => {
-
 const now = DateTime.now().setZone(TZ);
 
 const base = now.set({
@@ -158,10 +160,10 @@ millisecond: 0
 
 const diff = Math.floor(now.diff(base, "minutes").minutes);
 
-// نطاق 5 دقائق فقط
+// 5 messages only
 if (diff < 0 || diff > 4) return;
 
-// منع التكرار
+// prevent duplicates
 if (sent.has(diff)) return;
 
 sent.add(diff);
