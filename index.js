@@ -22,10 +22,11 @@ const ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
 // ================= START TIME =================
+// 🔥 21:09 (9:09 PM Morocco)
 
 const startTime = DateTime.now()
 .setZone(TZ)
-.set({ hour: 21, minute: 0, second: 0, millisecond: 0 });
+.set({ hour: 21, minute: 9, second: 0, millisecond: 0 });
 
 // ================= MAIN EMBED =================
 
@@ -73,7 +74,7 @@ new ButtonBuilder()
 );
 }
 
-// ================= AZKAR (FIXED 100%) =================
+// ================= AZKAR =================
 
 const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
 
@@ -85,24 +86,39 @@ const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "ح
 
 5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد`;
 
-// ================= DETAILS =================
+// ================= DETAILS (SAFE NO UNDEFINED) =================
 
 function prayerDetail(name) {
 
 const virtue = {
-fajr: `« مَن صلَّى الصُّبحَ في جماعةٍ فَهوَ في ذمَّةِ اللَّهِ »
+fajr: `صلاة الفجر من أعظم الصلوات التي تُظهر صدق الإيمان.
+
+« مَن صلَّى الصُّبحَ في جماعةٍ فَهوَ في ذمَّةِ اللَّهِ »
+
 📚 رواه الطبراني وصححه الألباني`,
 
-dhuhr: `« إنَّها ساعةٌ تُفْتَحُ فيها أبوابُ السَّماءِ »
+dhuhr: `صلاة الظهر من الصلوات التي تُقام في وسط اليوم.
+
+« إنَّها ساعةٌ تُفْتَحُ فيها أبوابُ السَّماءِ »
+
 📖 رواه الترمذي وصححه الألباني`,
 
-asr: `« الَّذي تفوتُهُ صلاةُ العصرِ فأنَّما وُتِرَ أَهْلَهُ ومالَهُ »
+asr: `صلاة العصر هي الصلاة الوسطى التي عظّمها الله.
+
+« الَّذي تفوتُهُ صلاةُ العصرِ فأنَّما وُتِرَ أَهْلَهُ ومالَهُ »
+
 📚 رواه البخاري ومسلم`,
 
-maghrib: `« فضل المحافظة على المغرب »
+maghrib: `صلاة المغرب ختام النهار وبداية السكون.
+
+« المحافظة على صلاة المغرب نور »
+
 📖 أثر حسن`,
 
-isha: `« مَن صلَّى العِشاءَ في جماعةٍ فكأنَّما قامَ نِصفَ اللَّيلِ »
+isha: `صلاة العشاء من أثقل الصلوات على المنافقين.
+
+« مَن صلَّى العِشاءَ في جماعةٍ فكأنَّما قامَ نِصفَ اللَّيلِ »
+
 📚 رواه مسلم`
 };
 
@@ -189,11 +205,9 @@ iconURL: ICON
 // ================= SCHEDULER =================
 
 client.once("ready", async () => {
-console.log("BOT READY SAFE VERSION");
+console.log("BOT READY - 21:09 VERSION");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
-
-let sent = new Set();
 
 setInterval(async () => {
 
@@ -203,14 +217,9 @@ for (let i = 0; i < prayers.length; i++) {
 
 const target = startTime.plus({ minutes: i });
 
-const key = `${now.toFormat("yyyy-MM-dd")}-${i}`;
-
 const diff = now.diff(target, "seconds").seconds;
 
 if (diff < 0 || diff >= 60) continue;
-if (sent.has(key)) continue;
-
-sent.add(key);
 
 await channel.send({
 embeds: [prayers[i]()],
