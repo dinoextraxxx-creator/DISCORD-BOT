@@ -21,19 +21,19 @@ const TZ = "Africa/Casablanca";
 const ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
-// ================= BASE =================
+// ================= EMBED BASE =================
 
-function mainEmbed(title, verse) {
+function mainEmbed(name, verse) {
 return new EmbedBuilder()
 .setAuthor({
 name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
 iconURL: ICON
 })
-.setTitle(`حان موعد أذان صلاة ${title} حسب التوقيت المحلي لمدينة الرباط`)
+.setTitle(`حان موعد أذان صلاة ${name} حسب التوقيت المحلي لمدينة الرباط`)
 .setColor("#FFD700")
 .setDescription(`قال تعالى :
 
-${verse}`)
+***${verse}***`)
 .setFooter({
 text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
 iconURL: ICON
@@ -41,23 +41,23 @@ iconURL: ICON
 .setTimestamp();
 }
 
-// ================= PRAYERS =================
+// ================= MAIN PRAYERS =================
 
 const prayers = [
-() => mainEmbed("الفجر", "***﴿ وَقُرْآنَ الْفَجْرِ ۖ ﴾***"),
-() => mainEmbed("الظهر", "***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ ﴾***"),
-() => mainEmbed("العصر", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***"),
-() => mainEmbed("المغرب", "***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ ۚ ﴾***"),
-() => mainEmbed("العشاء", "***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***")
+() => mainEmbed("الفجر", "﴿ وَقُرْآنَ الْفَجْرِ ۖ ﴾"),
+() => mainEmbed("الظهر", "﴿ فَأَقِيمُوا الصَّلَاةَ ۚ ﴾"),
+() => mainEmbed("العصر", "﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾"),
+() => mainEmbed("المغرب", "﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ ۚ ﴾"),
+() => mainEmbed("العشاء", "﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾")
 ];
 
 // ================= BUTTONS =================
 
-function rowButtons(prayerName) {
+function buttons(prayer) {
 return new ActionRowBuilder().addComponents(
 new ButtonBuilder()
-.setCustomId(`pray_${prayerName}`)
-.setLabel(`صلاة ${prayerName}`)
+.setCustomId(`pray_${prayer}`)
+.setLabel(`صلاة ${prayer}`)
 .setStyle(ButtonStyle.Secondary),
 
 new ButtonBuilder()
@@ -69,35 +69,48 @@ new ButtonBuilder()
 
 // ================= AZKAR =================
 
-const azkar = `1- يقول مثل ما يقول المؤذن __إلا__ في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
+const azkar = `1- يقول مثل ما يقول المؤذن إلا في حي على الصلاة وحي على الفلاح فيقول لا حول ولا قوة إلا بالله
 
 2- يقول الشهادة بعد الأذان
 
-3- يصلي على النبي ﷺ
+3- الصلاة على النبي ﷺ
 
 4- اللهم رب هذه الدعوة التامة...
 
 5- الدعاء بين الأذان والإقامة`;
 
-// ================= INTERACTIONS =================
+// ================= INTERACTION =================
 
 client.on("interactionCreate", async (i) => {
 if (!i.isButton()) return;
 
 if (i.customId.startsWith("pray_")) {
+
 const name = i.customId.replace("pray_", "");
 
 const map = {
-الفجر: 0,
-الظهر: 1,
-العصر: 2,
-المغرب: 3,
-العشاء: 4
+fajr: 0,
+dhuhr: 1,
+asr: 2,
+maghrib: 3,
+isha: 4
 };
 
 return i.reply({
 ephemeral: true,
-embeds: [prayers[map[name]]()]
+embeds: [
+new EmbedBuilder()
+.setAuthor({
+name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
+iconURL: ICON
+})
+.setColor("#FFD700")
+.setFooter({
+text: "مواعيد الصلاة قد تتغير من مدينة الى الاخرى",
+iconURL: ICON
+})
+.setDescription(getPrayerText(name))
+]
 });
 }
 
@@ -119,19 +132,55 @@ iconURL: ICON
 }
 });
 
-// ================= READY =================
+// ================= PRAYER DETAILS =================
+
+function getPrayerText(name) {
+const data = {
+fajr: `صلاة الفجر مقياس براءة من النفاق
+***صــلاة الفــجــر***
+• 2 ركعات
+• سنة قبلية: 2
+• بعدية: 0`,
+
+dhuhr: `صلاة الظهر أول صلاة فرضت
+***صــلاة الظــهــر***
+• 4 ركعات
+• سنة قبلية: 4
+• بعدية: 2`,
+
+asr: `صلاة العصر الوسطى
+***صــلاة العصــر***
+• 4 ركعات
+• لا سنة قبلية
+• لا سنة بعدية`,
+
+maghrib: `صلاة المغرب
+***صــلاة المغــرب***
+• 3 ركعات
+• سنة بعدية: 2`,
+
+isha: `صلاة العشاء
+***صــلاة العشــاء***
+• 4 ركعات
+• سنة بعدية: 2`
+};
+
+return data[name];
+}
+
+// ================= START SYSTEM =================
 
 client.once("ready", async () => {
-console.log("INDEX READY");
+console.log("BOT READY SAFE FINAL");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
 
-// 🔥 START TIME: 19:42
+// 🔥 START TIME: 19:56 (TODAY)
 const startTime = DateTime.now()
 .setZone(TZ)
 .set({
 hour: 19,
-minute: 42,
+minute: 56,
 second: 0,
 millisecond: 0
 });
@@ -153,6 +202,7 @@ const key = `${now.toFormat("yyyy-MM-dd")}-${i}`;
 
 const diff = now.diff(target, "seconds").seconds;
 
+// نافذة دقيقة واحدة فقط
 if (diff < 0 || diff >= 60) continue;
 if (sent.has(key)) continue;
 
@@ -160,7 +210,7 @@ sent.add(key);
 
 await channel.send({
 embeds: [prayers[i]()],
-components: [rowButtons(Object.keys(prayers)[i])]
+components: [buttons(Object.keys(getPrayerText)[i])]
 });
 
 if (i === prayers.length - 1) {
