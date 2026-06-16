@@ -27,7 +27,7 @@ function rowButtons() {
 return new ActionRowBuilder().addComponents(
 new ButtonBuilder()
 .setCustomId("prayer")
-.setLabel("صلاة")
+.setLabel("صلاة الفجر")
 .setStyle(ButtonStyle.Secondary),
 
 new ButtonBuilder()
@@ -37,7 +37,7 @@ new ButtonBuilder()
 );
 }
 
-// ================= EMBEDS =================
+// ================= EMBED BASE =================
 
 function base(title, desc) {
 return new EmbedBuilder()
@@ -58,36 +58,46 @@ iconURL: ICON
 // ================= PRAYERS =================
 
 const fajr = () =>
-base("حــان مــوعـد أذان صــلاة الفـجـر",
+base(
+"حــان مــوعـد أذان صــلاة الفـجـر",
 `قال الله تعالى :
 
 ***﴿ وَقُرْآنَ الْفَجْرِ ۖ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا ﴾***
 
-قرآن الفجر : صلاة الفجر`);
+قرآن الفجر : صلاة الفجر`
+);
 
 const dhuhr = () =>
-base("حــان مــوعـد أذان صــلاة الــظــهــر",
+base(
+"حــان مــوعـد أذان صــلاة الــظــهــر",
 `قال الله تعالى :
 
-***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾***`);
+***﴿ فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾***`
+);
 
 const asr = () =>
-base("حــان مــوعـد أذان صــلاة الــعــصــر",
+base(
+"حــان مــوعـد أذان صــلاة الــعــصــر",
 `قال الله تعالى :
 
-***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`);
+***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
+);
 
 const maghrib = () =>
-base("حــان مــوعـد أذان صــلاة الــمــغــرب",
+base(
+"حــان مــوعـد أذان صــلاة الــمــغــرب",
 `قال الله تعالى :
 
-***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ۚ إِنَّ الْحَسَنَاتِ يُذْهِبْنَ السَّيِّئَاتِ ۚ ذَٰلِكَ ذِكْرَىٰ لِلَّذَّاكِرِينَ﴾***`);
+***﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ۚ إِنَّ الْحَسَنَاتِ يُذْهِبْنَ السَّيِّئَاتِ ۚ ذَٰلِكَ ذِكْرَىٰ لِلَّذَّاكِرِينَ﴾***`
+);
 
 const isha = () =>
-base("حــان مــوعـد أذان صــلاة الــعــشــاء",
+base(
+"حــان مــوعـد أذان صــلاة الــعــشــاء",
 `قال الله تعالى :
 
-***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`);
+***﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ﴾***`
+);
 
 // ================= INTERACTIONS =================
 
@@ -95,7 +105,10 @@ client.on("interactionCreate", async (i) => {
 if (!i.isButton()) return;
 
 if (i.customId === "prayer") {
-return i.reply({ ephemeral: true, embeds: [fajr()] });
+return i.reply({
+ephemeral: true,
+embeds: [fajr()]
+});
 }
 
 if (i.customId === "adhan") {
@@ -124,14 +137,15 @@ new EmbedBuilder()
 // ================= SCHEDULER =================
 
 client.once("ready", async () => {
-console.log("BOT READY");
+console.log("BOT STARTED CLEAN");
 
 const channel = await client.channels.fetch(CHANNEL_ID);
 
 const prayers = [fajr, dhuhr, asr, maghrib, isha];
 
+// 🔥 بداية التوقيت: 18:32 (6:32 PM)
 const START_HOUR = 18;
-const START_MINUTE = 23;
+const START_MINUTE = 32;
 
 let sent = new Set();
 
@@ -148,7 +162,7 @@ millisecond: 0
 
 const diff = Math.floor(now.diff(base, "minutes").minutes);
 
-// خارج النطاق
+// خارج النطاق (5 رسائل فقط)
 if (diff < 0 || diff > 4) return;
 
 // منع التكرار
@@ -156,18 +170,14 @@ if (sent.has(diff)) return;
 
 sent.add(diff);
 
-// حماية إضافية
 if (!prayers[diff]) return;
 
 await channel.send({
-embeds: [prayers[diff]()],
-components: [rowButtons()]
+embeds: [prayers[diff]()]
 });
 
 }, 1000);
 
 });
-
-// ================= LOGIN =================
 
 client.login(process.env.TOKEN);
