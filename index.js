@@ -345,72 +345,58 @@ err
 
 });
 
-// ================= SEND ALL ONCE =================
+const cron = require("node-cron");
 
-client.once(
-"ready",
+const TZ = "Africa/Casablanca";
 
-async ()=>{
+// مواقيت المغرب (ثابتة يوميًا)
+const schedule = [
+{ key: "fajr", cron: "24 4 * * *" },
+{ key: "dhuhr", cron: "33 13 * * *" },
+{ key: "asr", cron: "14 17 * * *" },
+{ key: "maghrib", cron: "45 20 * * *" },
+{ key: "isha", cron: "18 22 * * *" }
+];
+
+async function sendPrayer(key){
 
 try{
 
-console.log(
-"READY"
-);
+const channel =
+await client.channels.fetch(CHANNEL_ID);
 
-const channel=
-await client.channels.fetch(
-CHANNEL_ID
-);
+if(!channel) return;
 
-const order=[
-"fajr",
-"dhuhr",
-"asr",
-"maghrib",
-"isha"
-];
+await channel.send({
+embeds:[mainEmbed(key)],
+components:[buttons(key)]
+});
 
-await Promise.all(
-
-order.map(
-key=>
-
-channel.send({
-
-embeds:[
-mainEmbed(
-key
-)
-],
-
-components:[
-buttons(
-key
-)
-]
-
-})
-
-)
-
-);
-
-console.log(
-"SENT"
-);
+console.log("SENT", key);
 
 }catch(err){
-
-console.log(
-err
-);
-
+console.log("ERROR", key, err);
 }
 
 }
 
-);
+client.once("ready", async ()=>{
+
+console.log("BOT READY");
+
+for(const item of schedule){
+
+cron.schedule(item.cron, async ()=>{
+
+await sendPrayer(item.key);
+
+}, { timezone: TZ });
+
+}
+
+console.log("SCHEDULE ACTIVE");
+
+});
 
 // ================= LOGIN =================
 
