@@ -7,6 +7,7 @@ let lastIndex = -1;
 
 function getRandomHadith() {
   let index;
+
   do {
     index = Math.floor(Math.random() * hadiths.length);
   } while (index === lastIndex && hadiths.length > 1);
@@ -25,16 +26,25 @@ function buildEmbed(h) {
       { name: "📚 المصدر", value: h.source || "غير مذكور" },
       { name: "📖 البيان", value: h.bayan || "لا يوجد" }
     )
-    .setFooter({ text: "4KO • YONKO" });
+    .setFooter({ text: "Hadith System" });
 }
 
-function startHadithSystem(client) {
-  const channel = client.channels.cache.get("1516016586643734639");
-  if (!channel) return;
+async function startHadithSystem(client) {
+  const channel = await client.channels.fetch("1516016586643734639").catch(() => null);
 
-  setInterval(() => {
+  if (!channel) {
+    console.log("❌ Hadith channel not found");
+    return;
+  }
+
+  console.log("✅ Hadith system started");
+
+  // إرسال اختبار فوري عند التشغيل
+  channel.send({ content: "📜 تم تشغيل نظام الأحاديث" });
+
+  setInterval(async () => {
     const hadith = getRandomHadith();
-    channel.send({ embeds: [buildEmbed(hadith)] });
+    await channel.send({ embeds: [buildEmbed(hadith)] });
   }, 2 * 60 * 1000);
 }
 
