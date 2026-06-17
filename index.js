@@ -1,24 +1,31 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 
-const { startPrayerSystem } = require("./prayerSystem");
-const { startHadithSystem } = require("./hadithSystem");
-
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-console.log("🔥 BOT LOADING");
+console.log("🔥 BOT STARTING...");
 
-process.on("unhandledRejection", console.log);
-process.on("uncaughtException", console.log);
+// ================= SAFE LOADER =================
+
+async function loadSystem(name, fn) {
+  try {
+    console.log(`🟢 Loading ${name}...`);
+    await fn(client);
+    console.log(`✅ ${name} loaded`);
+  } catch (err) {
+    console.log(`❌ ${name} FAILED:`, err);
+  }
+}
 
 client.once("ready", async () => {
   console.log("✅ BOT READY");
 
-  await startPrayerSystem(client);
-  await startHadithSystem(client);
+  // تحميل كل نظام بشكل آمن (بدون كراش كامل للبوت)
+  await loadSystem("PRAYER", require("./prayerSystem").startPrayerSystem);
+  await loadSystem("HADITH", require("./hadithSystem").startHadithSystem);
 
-  console.log("🚀 SYSTEMS ONLINE");
+  console.log("🚀 SYSTEM BOOT FINISHED");
 });
 
 client.login(process.env.TOKEN);
