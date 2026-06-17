@@ -18,19 +18,19 @@ class HadithSystem {
         .setColor("#FFD700")
         .setDescription(`🔸 قال رسول الله ﷺ:\n\n«${random.text}»`)
         .addFields(
-          { name: "👤 الراوي", value: random.rawi || "غير مذكور", inline: false },
-          { name: "📚 المصدر", value: random.source || "غير مذكور", inline: false },
-          { name: "📖 بيان", value: random.bayan || "لا يوجد", inline: false }
+          { name: "👤 الراوي", value: random.rawi || "غير مذكور" },
+          { name: "📚 المصدر", value: random.source || "غير مذكور" },
+          { name: "📖 بيان", value: random.bayan || "لا يوجد" }
         )
         .setFooter({ text: "4KO • YONKO.Mُـــذَكّــــــر" });
 
       channel.send({ embeds: [embed] });
     };
 
-    // أول تشغيل
+    // تشغيل فوري
     sendHadith();
 
-    // كل 2 دقائق
+    // كل دقيقتين
     setInterval(sendHadith, 2 * 60 * 1000);
   }
 }
