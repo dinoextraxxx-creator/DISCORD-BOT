@@ -1,55 +1,57 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+intents: [GatewayIntentBits.Guilds]
 });
 
 console.log("🔥 BOT STARTING...");
 
-// ================= SAFE LOADER =================
-
-async function safeLoad(name, fn) {
-
-  try {
-
-    console.log(`🟢 Loading ${name}...`);
-
-    await fn(client);
-
-    console.log(`✅ ${name} LOADED`);
-
-  }
-
-  catch (err) {
-
-    console.log(`❌ ${name} ERROR`);
-
-    console.log(err);
-
-  }
-
+async function safe(name, fn){
+try{
+console.log(`🟢 Loading ${name}...`);
+await fn(client);
+console.log(`✅ ${name} LOADED`);
+}catch(err){
+console.log(`❌ ${name} ERROR`);
+console.log(err);
 }
-
-// ================= READY =================
+}
 
 client.once("clientReady", async () => {
 
-  console.log("✅ BOT READY");
+console.log("✅ BOT READY");
 
-  await safeLoad(
-    "PRAYER",
-    require("./prayerSystem").startPrayerSystem
-  );
+await safe("PRAYER", require("./prayerSystem").startPrayerSystem);
 
-  await safeLoad(
-    "HADITH",
-    require("./hadithSystem").startHadithSystem
-  );
-
-  console.log("🚀 SYSTEM ONLINE");
-
+console.log("🚀 SYSTEM ONLINE");
 });
 
-// ================= LOGIN =================
+// 🟢 BUTTON HANDLER (FIXED)
+
+client.on("interactionCreate", async (interaction) => {
+
+if(!interaction.isButton()) return;
+
+if(interaction.customId.startsWith("prayer_")){
+
+const name = interaction.customId.replace("prayer_","");
+
+return interaction.reply({
+content: `تفاصيل صلاة ${name}`,
+ephemeral: true
+});
+
+}
+
+if(interaction.customId === "azkar"){
+
+return interaction.reply({
+content: "أذكار الأذان",
+ephemeral: true
+});
+
+}
+
+});
 
 client.login(process.env.TOKEN);
