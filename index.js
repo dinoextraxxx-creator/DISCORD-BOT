@@ -9,6 +9,7 @@ console.log("🔥 BOT STARTING...");
 // ================= SAFE LOADER =================
 
 async function safeLoad(name, fn) {
+
   try {
 
     console.log(`🟢 Loading ${name}...`);
@@ -17,42 +18,33 @@ async function safeLoad(name, fn) {
 
     console.log(`✅ ${name} LOADED`);
 
-  } catch (err) {
+  }
+
+  catch (err) {
 
     console.log(`❌ ${name} ERROR`);
 
     console.log(err);
 
   }
+
 }
 
 // ================= READY =================
 
-client.once("ready", async () => {
+client.once("clientReady", async () => {
 
   console.log("✅ BOT READY");
 
-  try {
+  await safeLoad(
+    "PRAYER",
+    require("./prayerSystem").startPrayerSystem
+  );
 
-    await safeLoad(
-      "PRAYER",
-      require("./prayerSystem").startPrayerSystem
-    );
-
-  } catch (e) {
-    console.log("PRAYER LOAD FAILED");
-  }
-
-  try {
-
-    await safeLoad(
-      "HADITH",
-      require("./hadithSystem").startHadithSystem
-    );
-
-  } catch (e) {
-    console.log("HADITH LOAD FAILED");
-  }
+  await safeLoad(
+    "HADITH",
+    require("./hadithSystem").startHadithSystem
+  );
 
   console.log("🚀 SYSTEM ONLINE");
 
