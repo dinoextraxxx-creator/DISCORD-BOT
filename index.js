@@ -6,11 +6,11 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
-  startHadithSystem(client);
-  startPrayerSystem(client);
+  await startHadithSystem(client);
+  await startPrayerSystem(client);
 });
 
 client.login(process.env.TOKEN);
