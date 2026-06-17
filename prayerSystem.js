@@ -5,20 +5,15 @@ ButtonBuilder,
 ButtonStyle
 } = require("discord.js");
 
-const CHANNEL =
-"1516405973365952633";
+const CHANNEL = "1516405973365952633";
 
-const ICON =
-"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
+const ICON = "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
-const COLOR =
-"#FFD700";
+const COLOR = "#FFD700";
 
-const AUTHOR =
-"مُـــذَكّــــــر";
+const AUTHOR = "مُـــذَكّــــــر";
 
-const FOOTER =
-"4KO • YONKO.مُـــذَكّــــــر";
+const FOOTER = "4KO • YONKO.مُـــذَكّــــــر";
 
 const prayers = [
 "الفجر",
@@ -31,67 +26,60 @@ const prayers = [
 let index = 0;
 let started = false;
 
-function buildEmbed(name){
+function embed(name){
 
 return new EmbedBuilder()
 
 .setColor(COLOR)
 
 .setAuthor({
-name:AUTHOR,
-iconURL:ICON
+name: AUTHOR,
+iconURL: ICON
 })
 
-.setTitle("صلاة ${name}")
+.setTitle(`صلاة ${name}`)
 
 .setDescription(
 `قال تعالى :
 
-﴿ ذكر مرتبط بصلاة ${name} ﴾`
+***﴿ ذكر مرتبط بصلاة ${name} ﴾***`
 )
 
 .setFooter({
-text:FOOTER,
-iconURL:ICON
+text: FOOTER,
+iconURL: ICON
 })
 
 .setTimestamp();
 
 }
 
-function buildButtons(name){
+function buttons(name){
 
 return new ActionRowBuilder()
-
 .addComponents(
-
 new ButtonBuilder()
-.setCustomId("prayer_${name}")
-.setLabel("صلاة ${name}")
+.setCustomId(`prayer_${name}`)
+.setLabel(`صلاة ${name}`)
 .setStyle(ButtonStyle.Primary),
 
 new ButtonBuilder()
 .setCustomId("azkar")
 .setLabel("أذكار الأذان")
 .setStyle(ButtonStyle.Secondary)
-
 );
 
 }
 
-async function sendPrayer(client){
+async function send(client){
 
-const channel =
-await client.channels.fetch(CHANNEL);
+const ch = await client.channels.fetch(CHANNEL);
 
-const name =
-prayers[index];
+const name = prayers[index];
 
-await channel.send({
-
-embeds:[buildEmbed(name)],
-components:[buildButtons(name)]
-
+await ch.send({
+embeds:[embed(name)],
+components:[buttons(name)]
 });
 
 index++;
@@ -104,18 +92,15 @@ index = 0;
 
 async function startPrayerSystem(client){
 
-if(started) return; // 🔥 يمنع التكرار 100%
-
+if(started) return;
 started = true;
 
-await sendPrayer(client); // أول تشغيل مباشر
+await send(client);
 
 setInterval(() => {
-sendPrayer(client);
+send(client);
 }, 60000);
 
 }
 
-module.exports = {
-startPrayerSystem
-};
+module.exports = { startPrayerSystem };
