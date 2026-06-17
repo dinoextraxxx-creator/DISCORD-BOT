@@ -1,46 +1,70 @@
-const { EmbedBuilder } = require("discord.js");
+const prayers = require("./prayers.json");
 
-class PrayerSystem {
-  constructor(client, channelId) {
-    this.client = client;
-    this.channelId = channelId;
+let started = false;
 
-    this.prayers = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"];
-    this.sent = new Set();
-  }
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
 
-  async sendPrayer(name) {
-    const channel = await this.client.channels.fetch(this.channelId);
-
-    const embed = new EmbedBuilder()
-      .setColor("#FFD700")
-      .setTitle(`🕌 ${name}`)
-      .setDescription(`حان الآن وقت صلاة ${name}`)
-      .setFooter({ text: "موعد الأذان قد يتغير من مدينة لأخرى" });
-
-    await channel.send({ embeds: [embed] });
-  }
-
-  async start() {
-    const run = async () => {
-      for (let i = 0; i < this.prayers.length; i++) {
-        const name = this.prayers[i];
-
-        if (this.sent.has(name)) continue;
-
-        await this.sendPrayer(name);
-        this.sent.add(name);
-
-        // ⏱️ دقيقة بين كل صلاة
-        if (i < this.prayers.length - 1) {
-          await new Promise((res) => setTimeout(res, 60 * 1000));
-        }
+function buildEmbed(prayer) {
+  return {
+    color: 0xFFD700,
+    author: {
+      name: "مُـــذَكّــــــر | مواعيد الصلاة"
+    },
+    fields: [
+      {
+        name: "🕌 الصلاة",
+        value: prayer.name || "غير متوفر"
+      },
+      {
+        name: "⏰ الوقت",
+        value: prayer.time || "غير متوفر"
+      },
+      {
+        name: "📖 الفضل",
+        value: prayer.fadl || "لا يوجد"
+      },
+      {
+        name: "📚 الحديث",
+        value: prayer.hadith || "لا يوجد"
       }
-    };
+    ],
+    footer: {
+      text: "موعد الأذان قد يتغير من مدينة لأخرى"
+    }
+  };
+}
 
-    // تشغيل فوري عند تشغيل البوت
-    run();
+async function start(client) {
+  const channelId = "1516405973365952633";
+
+  if (started) return;
+  started = true;
+
+  console.log("Prayer system started...");
+
+  try {
+    const channel = await client.channels.fetch(channelId);
+    if (!channel) return;
+
+    const keys = Object.keys(prayers);
+
+    for (const key of keys) {
+      const prayer = prayers[key];
+
+      const embed = buildEmbed(prayer);
+      await channel.send({ embeds: [embed] });
+
+      // فرق دقيقة بين كل صلاة
+      await sleep(60 * 1000);
+    }
+
+    console.log("Prayer cycle finished (no repeat).");
+
+  } catch (err) {
+    console.error("Prayer system error:", err);
   }
 }
 
-module.exports = PrayerSystem;
+module.exports = { start };
