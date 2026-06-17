@@ -1,8 +1,10 @@
 const fs = require("fs");
 const { EmbedBuilder } = require("discord.js");
 
-const CHANNEL_ID = "YOUR_CHANNEL_ID";
-const ICON = "YOUR_ICON";
+// ================= CONFIG =================
+
+const CHANNEL_ID = "1516405973365952633";
+const ICON = "YOUR_ICON_URL";
 const AUTHOR = "مُـــذَكّــــــر | الأحاديث";
 const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
@@ -11,16 +13,18 @@ const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى
 let hadiths = [];
 
 try {
-  hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8")).hadiths;
+  const data = fs.readFileSync("./hadiths.json", "utf8");
+  const json = JSON.parse(data);
+  hadiths = json.hadiths || [];
 } catch (err) {
-  console.log("❌ JSON ERROR:", err);
+  console.log("❌ HADITH JSON ERROR:", err);
   hadiths = [];
 }
 
 // ================= RANDOM =================
 
 function getRandomHadith() {
-  if (!hadiths || hadiths.length === 0) {
+  if (!hadiths.length) {
     return {
       text: "لا توجد أحاديث حالياً",
       narrator: "",
@@ -31,13 +35,17 @@ function getRandomHadith() {
   return hadiths[Math.floor(Math.random() * hadiths.length)];
 }
 
-// ================= EMBED =================
+// ================= EMBED FORMAT =================
 
 function buildEmbed(h) {
+  const cleanText = h.text
+    .replace("قال رسول الله ﷺ:", "")
+    .trim();
+
   return new EmbedBuilder()
     .setColor("#E8C547")
     .setDescription(
-`🔸 ➤ قال رسول الله ﷺ: «${h.text.replace("قال رسول الله ﷺ:", "").trim()}»
+`🔸 ➤ قال رسول الله ﷺ: «${cleanText}»
 
 👤 ➤ الراوي : ${h.narrator}
 
@@ -60,17 +68,19 @@ async function sendHadith(client) {
       embeds: [buildEmbed(hadith)]
     });
 
+    console.log("📿 HADITH SENT");
+
   } catch (err) {
     console.log("❌ SEND ERROR:", err);
   }
 }
 
-// ================= SAFE LOOP (every 2 min) =================
+// ================= LOOP SYSTEM (2 MIN TEST) =================
 
 function startHadithSystem(client) {
   console.log("📿 Hadith System Started");
 
-  // إرسال فوري عند التشغيل
+  // إرسال مباشر عند التشغيل
   sendHadith(client);
 
   // كل دقيقتين
@@ -78,7 +88,7 @@ function startHadithSystem(client) {
     try {
       sendHadith(client);
     } catch (err) {
-      console.log("❌ LOOP ERROR:", err);
+      console.log("❌ INTERVAL ERROR:", err);
     }
   }, 2 * 60 * 1000);
 }
