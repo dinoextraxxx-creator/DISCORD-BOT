@@ -7,13 +7,13 @@ EmbedBuilder
 
 const startPrayerSystem=require("./prayerSystem");
 
-global.PRAYER_ICON=
+const PRAYER_ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
-global.BUTTON_ICON=
+const BUTTON_ICON =
 "https://cdn.discordapp.com/attachments/1515161056975126705/1516909922040811610/-_4.jpg";
 
-global.PRAYER_DETAILS=require("./prayerDetails");
+const PRAYER_DETAILS=require("./prayerDetails");
 
 const AZKAR=`
 1- يقول مثل ما يقول المؤذن إلا في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
@@ -28,144 +28,92 @@ const AZKAR=`
 `;
 
 const client=new Client({
-
-intents:[
-GatewayIntentBits.Guilds
-]
-
+intents:[GatewayIntentBits.Guilds]
 });
 
-client.once(
-
-Events.ClientReady,
-
-()=>{
-
+client.once(Events.ClientReady,()=>{
+console.log("BOT READY");
 startPrayerSystem(client);
+});
 
-}
-
-);
-
-client.on(
-
-Events.InteractionCreate,
-
-async(i)=>{
+client.on(Events.InteractionCreate,async(i)=>{
 
 if(!i.isButton()) return;
 
+try{
+
+// ────────────────
+// زر الصلاة
+// ────────────────
 if(i.customId.startsWith("pray_")){
 
-const prayer=
-decodeURIComponent(
-i.customId.replace(
-"pray_",
-""
-)
-);
+const prayer=i.customId.replace("pray_","");
+
+const text=PRAYER_DETAILS?.[prayer];
+
+if(!text)
+return i.reply({
+ephemeral:true,
+content:"حدث خطأ في تحميل تفاصيل الصلاة"
+});
 
 return i.reply({
-
 ephemeral:true,
-
 embeds:[
-
 new EmbedBuilder()
-
 .setColor("#00FF66")
-
 .setAuthor({
-
 name:"مُـــذَكّــــــر",
-
-iconURL:
-global.BUTTON_ICON
-
+iconURL:BUTTON_ICON
 })
-
-.setDescription(
-
-global.PRAYER_DETAILS[
-prayer
-]
-
-)
-
+.setDescription(text)
 .setFooter({
-
-text:
-"4KO • YONKO.مُـــذَكّــــــر",
-
-iconURL:
-global.BUTTON_ICON
-
+text:"4KO • YONKO.مُـــذَكّــــــر",
+iconURL:BUTTON_ICON
 })
-
 .setTimestamp()
-
 ]
-
 });
-
 }
 
-if(
-i.customId==="azkar"
-){
+// ────────────────
+// زر الأذكار
+// ────────────────
+if(i.customId==="azkar"){
 
 return i.reply({
-
 ephemeral:true,
-
 embeds:[
-
 new EmbedBuilder()
-
 .setColor("#00FF66")
-
 .setAuthor({
-
-name:
-"مُـــذَكّــــــر",
-
-iconURL:
-global.BUTTON_ICON
-
+name:"مُـــذَكّــــــر",
+iconURL:BUTTON_ICON
 })
-
-.setTitle(
-"اذكـــــــار الصــــــلاة"
-)
-
-.setDescription(
-AZKAR
-)
-
+.setTitle("اذكـــــــار الصــــــلاة")
+.setDescription(AZKAR)
 .setFooter({
-
-text:
-"4KO • YONKO.مُـــذَكّــــــر",
-
-iconURL:
-global.BUTTON_ICON
-
+text:"4KO • YONKO.مُـــذَكّــــــر",
+iconURL:BUTTON_ICON
 })
-
 .setTimestamp()
-
-)
-
 ]
+});
+}
+
+}catch(err){
+
+console.log("Interaction Error:",err);
+
+if(!i.replied){
+return i.reply({
+ephemeral:true,
+content:"حدث خطأ داخلي"
+});
+}
+
+}
 
 });
 
-}
-
-}
-
-);
-
-client.login(
-process.env.TOKEN
-);
+client.login(process.env.TOKEN);
