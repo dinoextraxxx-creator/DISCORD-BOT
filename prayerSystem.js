@@ -8,19 +8,19 @@ ButtonStyle
 const CHANNEL = "1516405973365952633";
 
 const ICON =
-"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg?ex=6a30b301&is=6a2f6181&hm=99212fa7d1a01c5bd6253cacfb49d1b849226abffe617b60c1c53121e1805f0f&";
 
 const COLOR = "#FFD700";
 
 const AUTHOR = "مُـــذَكّــــــر";
 
-const FOOTER = "قد يختلف موعد الاذان من مدينة لأخرى";
+const FOOTER = "4KO • YONKO.مُـــذَكّــــــر";
 
 const prayers = [
 {
 name:"الفجر",
 ayah:"﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ﴾",
-text:`صلاة الفجر هي مقياس براءة الإنسان من النفاق، والمحافظة عليها في وقتها أمارة على نيل ذمة الله وحفظه؛ لقوله ﷺ:
+text:`صلاة الفجر هي مقياس براءة الإنسان من النفاق...
 
 «مَن صلَّى الصُّبحَ في جماعةٍ فَهوَ في ذمَّةِ اللَّهِ»
 
@@ -86,7 +86,7 @@ name:"العشاء",
 ayah:"﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ ﴾",
 text:`صلاة العشاء أثقل صلاة...
 
-«من صلى العشاء في جماعة»
+«مَن صلَّى العِشاءَ في جماعةٍ فكأنَّما قامَ نِصفَ اللَّيلِ»
 
 📚 مسلم
 
@@ -125,13 +125,13 @@ iconURL: ICON
 
 }
 
-function buttons(p){
+function buttons(){
 
 return new ActionRowBuilder().addComponents(
 
 new ButtonBuilder()
-.setCustomId(`prayer_${p.name}`)
-.setLabel(`صلاة ${p.name}`)
+.setCustomId("prayer_info")
+.setLabel("صلاة")
 .setStyle(ButtonStyle.Secondary),
 
 new ButtonBuilder()
@@ -152,11 +152,13 @@ const ch = await client.channels.fetch(CHANNEL);
 
 async function next(){
 
-if(index >= prayers.length) return;
+if(index >= prayers.length){
+index = 0;
+}
 
 await ch.send({
 embeds:[embed(prayers[index])],
-components:[buttons(prayers[index])]
+components:[buttons()]
 });
 
 index++;
