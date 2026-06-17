@@ -1,41 +1,33 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 
-const hadithSystem = require("./hadithSystem");
-const prayerSystem = require("./prayerSystem");
-
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages
-  ]
+  intents: [GatewayIntentBits.Guilds]
 });
 
-// حماية من أي كراش نهائي
-process.on("unhandledRejection", (err) => {
-  console.log("❌ UNHANDLED REJECTION:");
-  console.log(err);
-});
-
-process.on("uncaughtException", (err) => {
-  console.log("❌ UNCAUGHT EXCEPTION:");
-  console.log(err);
-});
-
-// تأكد من التوكن
-if (!process.env.TOKEN) {
-  console.log("❌ TOKEN is missing in environment variables");
-  process.exit(1);
+// تحميل الأنظمة بشكل آمن
+try {
+  require("./hadithSystem")(client);
+} catch (e) {
+  console.log("Hadith module failed:", e.message);
 }
 
-client.once("ready", async () => {
-  console.log("✅ BOT ONLINE:", client.user.tag);
+try {
+  require("./prayerSystem")(client);
+} catch (e) {
+  console.log("Prayer module failed:", e.message);
+}
 
-  try {
-    await hadithSystem.start(client);
-    await prayerSystem.start(client);
-  } catch (e) {
-    console.log("❌ SYSTEM START ERROR:", e);
-  }
+client.once("ready", () => {
+  console.log(`✅ Logged in as ${client.user.tag}`);
+});
+
+// حماية نهائية ضد الكراش
+process.on("uncaughtException", (err) => {
+  console.log("🔥 Uncaught Exception:", err.message);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.log("⚠️ Unhandled Rejection:", err);
 });
 
 client.login(process.env.TOKEN);
