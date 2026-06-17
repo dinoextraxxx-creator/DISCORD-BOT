@@ -1,85 +1,61 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const fs = require("fs");
 
 const PRAYER_CHANNEL = "1516405973365952633";
+const sent = new Set();
+let prayers = [];
 
-// 🕌 بيانات تجريبية (تقدر تبدلها لاحقًا)
-const prayers = [
-  { name: "الفجر", time: "05:10" },
-  { name: "الظهر", time: "13:30" },
-  { name: "العصر", time: "17:00" },
-  { name: "المغرب", time: "19:30" },
-  { name: "العشاء", time: "21:00" }
-];
+function loadPrayers() {
+  prayers = JSON.parse(fs.readFileSync("./prayers.json", "utf8"));
+}
 
-let sentToday = new Set();
-
-// ⏱️ جلب الوقت الحالي HH:MM
-function nowTime() {
+function getTime() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-// 🕌 إنشاء الإيمبد
-function buildPrayerEmbed(name) {
-  return new EmbedBuilder()
-    .setColor("#FFD700")
-    .setTitle("🕌 أذان الصلاة")
-    .setDescription(`حان الآن وقت صلاة **${name}**`)
-    .setFooter({ text: "موعد الأذان قد يختلف حسب المدينة" });
+async function sendPrayer(client, prayer) {
+  try {
+    const channel = await client.channels.fetch(PRAYER_CHANNEL).catch(() => null);
+    if (!channel) return console.log("❌ Prayer channel not found");
+
+    const embed = {
+      color: 0xFFD700,
+      title: `🕌 ${prayer.name}`,
+      description: prayer.text,
+      author: {
+        name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
+      },
+    };
+
+    await channel.send({ embeds: [embed] });
+    console.log(`🕌 Sent: ${prayer.name}`);
+  } catch (err) {
+    console.log("❌ Prayer error:", err);
+  }
 }
 
-// 🔘 زر الأذكار (اختياري ثابت)
-function buildButtons() {
-  return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("adhkar")
-      .setLabel("📿 الأذكار")
-      .setStyle(ButtonStyle.Secondary)
-  );
-}
-
-// 📤 إرسال الصلاة
-function sendPrayer(client, prayer) {
-  const channel = client.channels.cache.get(PRAYER_CHANNEL);
-  if (!channel) return;
-
-  const embed = buildPrayerEmbed(prayer.name);
-
-  channel.send({
-    embeds: [embed],
-    components: [buildButtons()]
-  }).catch(() => {});
-}
-
-// 🔄 فحص الصلوات
 function checkPrayers(client) {
-  const t = nowTime();
+  const now = getTime();
 
   for (const p of prayers) {
-    if (p.time === t && !sentToday.has(p.name)) {
+    if (p.time === now && !sent.has(p.name)) {
       sendPrayer(client, p);
-      sentToday.add(p.name);
+      sent.add(p.name);
     }
   }
 }
 
-// 🔁 reset يومي
-function reset() {
-  sentToday.clear();
-}
-
-// 🚀 التشغيل
 function start(client) {
-  console.log("🕌 Prayer System Started");
+  loadPrayers();
+  console.log("🕌 Prayer system started");
 
-  // تشغيل فوري
+  // فحص أول مرة عند بدء التشغيل
   checkPrayers(client);
 
-  // كل دقيقة فحص (بدون كراش)
-  setInterval(() => checkPrayers(client), 60000);
-
-  // إعادة تعيين يومي
-  setInterval(reset, 24 * 60 * 60 * 1000);
+  // فحص كل دقيقة
+  setInterval(() => {
+    checkPrayers(client);
+  }, 60 * 1000);
 }
 
 module.exports = { start };
