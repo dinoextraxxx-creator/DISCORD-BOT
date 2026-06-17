@@ -1,55 +1,70 @@
 const { EmbedBuilder } = require("discord.js");
+const { PrayerTimes, Coordinates, CalculationMethod } = require("adhan");
 
-const prayers = [
-  { name: "الفجر", time: "05:00" },
-  { name: "الظهر", time: "12:30" },
-  { name: "العصر", time: "16:00" },
-  { name: "المغرب", time: "19:00" },
-  { name: "العشاء", time: "20:30" }
-];
-
-let sentToday = new Set();
-
-function nowTime() {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function buildEmbed(p) {
-  return new EmbedBuilder()
-    .setColor("#FFD700")
-    .setTitle(`🕌 موعد صلاة ${p.name}`)
-    .setDescription(`حان الآن وقت صلاة ${p.name}`)
-    .setFooter({ text: "Prayer System" });
-}
-
-async function startPrayerSystem(client) {
-  const channel = await client.channels.fetch("1516405973365952633").catch(() => null);
-
-  if (!channel) {
-    console.log("❌ Prayer channel not found");
-    return;
+class PrayerSystem {
+  constructor(client, channelId) {
+    this.client = client;
+    this.channelId = channelId;
+    this.sentToday = new Set();
   }
 
-  console.log("✅ Prayer system started");
+  getTimes() {
+    const coords = new Coordinates(30.4278, -9.5981); // Agadir
+    const params = CalculationMethod.MuslimWorldLeague();
 
-  // اختبار فوري
-  channel.send({ content: "🕌 تم تشغيل نظام الصلاة" });
+    const date = new Date();
+    return new PrayerTimes(coords, date, params);
+  }
 
-  setInterval(() => {
-    const current = nowTime();
+  async sendPrayer(name, time) {
+    const channel = await this.client.channels.fetch(this.channelId);
 
-    for (const p of prayers) {
-      if (p.time === current && !sentToday.has(p.name)) {
-        channel.send({ embeds: [buildEmbed(p)] });
-        sentToday.add(p.name);
+    const embed = new EmbedBuilder()
+      .setColor("#FFD700")
+      .setTitle(`🕌 ${name}`)
+      .setDescription(`حان الآن وقت صلاة ${name}`)
+      .addFields({
+        name: "⏰ الوقت",
+        value: time.toLocaleTimeString(),
+      })
+      .setFooter({ text: "موعد الأذان قد يتغير من مدينة لأخرى" });
+
+    channel.send({ embeds: [embed] });
+  }
+
+  start() {
+    const run = async () => {
+      const times = this.getTimes();
+
+      const prayers = [
+        { name: "الفجر", time: times.fajr },
+        { name: "الظهر", time: times.dhuhr },
+        { name: "العصر", time: times.asr },
+        { name: "المغرب", time: times.maghrib },
+        { name: "العشاء", time: times.isha }
+      ];
+
+      const now = new Date();
+
+      for (const p of prayers) {
+        const key = `${p.name}-${now.getDate()}`;
+
+        // منع التكرار
+        if (this.sentToday.has(key)) continue;
+
+        const diff = Math.abs(new Date(p.time) - now);
+
+        // إذا اقترب الوقت (دقيقة تقريباً)
+        if (diff < 60000) {
+          await this.sendPrayer(p.name, new Date(p.time));
+          this.sentToday.add(key);
+        }
       }
-    }
-  }, 30000);
+    };
 
-  setInterval(() => {
-    sentToday.clear();
-  }, 24 * 60 * 60 * 1000);
+    run();
+    setInterval(run, 60 * 1000);
+  }
 }
 
-module.exports = { startPrayerSystem };
+module.exports = PrayerSystem;
