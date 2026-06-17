@@ -6,15 +6,24 @@ function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+function safePrayers() {
+  try {
+    return Object.values(prayers || {});
+  } catch (e) {
+    console.log("❌ Invalid prayers.json", e);
+    return [];
+  }
+}
+
 function embed(p) {
   return {
     color: 0xFFD700,
-    author: { name: "مُـــذَكّــــــر | الصلاة" },
+    title: "مُـــذَكّــــــر | صلاة",
     fields: [
-      { name: "🕌 الصلاة", value: p.name || "N/A" },
-      { name: "⏰ الوقت", value: p.time || "N/A" },
-      { name: "📖 الفضل", value: p.fadl || "N/A" },
-      { name: "📚 الحديث", value: p.hadith || "N/A" }
+      { name: "🕌 الصلاة", value: p?.name || "N/A" },
+      { name: "⏰ الوقت", value: p?.time || "N/A" },
+      { name: "📖 الفضل", value: p?.fadl || "N/A" },
+      { name: "📚 الحديث", value: p?.hadith || "N/A" }
     ]
   };
 }
@@ -25,38 +34,36 @@ async function start(client) {
   if (started) return;
   started = true;
 
-  console.log("🚀 Prayer system starting...");
+  console.log("🚀 Prayer system booting...");
 
   let channel;
   try {
     channel = await client.channels.fetch(channelId);
   } catch (e) {
-    console.error("❌ Channel fetch failed (PRAYER):", e);
+    console.log("❌ Cannot fetch prayer channel:", e);
     return;
   }
 
   if (!channel) {
-    console.error("❌ Prayer channel not found");
+    console.log("❌ Prayer channel not found");
     return;
   }
 
-  console.log("✅ Prayer channel OK");
+  console.log("✅ Prayer channel ready");
 
-  const keys = Object.keys(prayers);
+  const list = safePrayers();
 
-  if (keys.length === 0) {
-    console.error("❌ prayers.json is empty");
+  if (list.length === 0) {
+    console.log("❌ prayers.json empty");
     return;
   }
 
-  for (let i = 0; i < keys.length; i++) {
-    const p = prayers[keys[i]];
-
+  for (let i = 0; i < list.length; i++) {
     try {
-      await channel.send({ embeds: [embed(p)] });
-      console.log(`📨 Prayer sent: ${keys[i]}`);
+      await channel.send({ embeds: [embed(list[i])] });
+      console.log("📨 Prayer sent");
     } catch (e) {
-      console.error("❌ Prayer send error:", e);
+      console.log("❌ Prayer send error:", e);
     }
 
     await sleep(60 * 1000);
