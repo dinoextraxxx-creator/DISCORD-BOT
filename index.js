@@ -6,26 +6,24 @@ const client = new Client({
 
 console.log("🔥 BOT STARTING...");
 
-// ================= SAFE LOADER =================
-
-async function loadSystem(name, fn) {
+async function safeLoad(name, fn) {
   try {
     console.log(`🟢 Loading ${name}...`);
     await fn(client);
-    console.log(`✅ ${name} loaded`);
+    console.log(`✅ ${name} LOADED`);
   } catch (err) {
-    console.log(`❌ ${name} FAILED:`, err);
+    console.log(`❌ ${name} ERROR:`, err.message);
   }
 }
 
 client.once("ready", async () => {
   console.log("✅ BOT READY");
 
-  // تحميل كل نظام بشكل آمن (بدون كراش كامل للبوت)
-  await loadSystem("PRAYER", require("./prayerSystem").startPrayerSystem);
-  await loadSystem("HADITH", require("./hadithSystem").startHadithSystem);
+  // تشغيل الأنظمة بشكل آمن
+  safeLoad("PRAYER", require("./prayerSystem").startPrayerSystem);
+  safeLoad("HADITH", require("./hadithSystem").startHadithSystem);
 
-  console.log("🚀 SYSTEM BOOT FINISHED");
+  console.log("🚀 SYSTEM ONLINE");
 });
 
 client.login(process.env.TOKEN);
