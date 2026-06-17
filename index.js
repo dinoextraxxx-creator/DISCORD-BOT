@@ -1,4 +1,5 @@
 const { Client, GatewayIntentBits } = require("discord.js");
+
 const hadithSystem = require("./hadithSystem");
 const prayerSystem = require("./prayerSystem");
 
@@ -9,15 +10,29 @@ const client = new Client({
   ]
 });
 
-// 📌 تشغيل عند الجاهزية
+// 🛑 حماية من أي كراش غير متوقع
+process.on("unhandledRejection", (err) => {
+  console.log("❌ Unhandled Rejection:", err);
+});
+
+process.on("uncaughtException", (err) => {
+  console.log("❌ Uncaught Exception:", err);
+});
+
+// 🚀 تشغيل الأنظمة
 client.once("ready", async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 
-  // 🕌 تشغيل نظام الصلاة
-  prayerSystem.start(client);
+  try {
+    // تأخير بسيط لتجنب cache issues
+    setTimeout(() => {
+      prayerSystem.start(client);
+      hadithSystem.start(client);
+    }, 3000);
 
-  // 📖 تشغيل نظام الأحاديث
-  hadithSystem.start(client);
+  } catch (err) {
+    console.log("❌ Error in systems startup:", err);
+  }
 });
 
-client.login("YOUR_BOT_TOKEN");
+client.login(process.env.TOKEN);
