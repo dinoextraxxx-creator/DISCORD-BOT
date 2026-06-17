@@ -6,14 +6,24 @@ const CHANNEL_ID = "1516016586643734639";
 const ICON = "YOUR_ICON_URL";
 const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
-let data = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
+let data = { hadiths: [] };
+
+try {
+  data = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
+} catch (err) {
+  console.log("❌ JSON ERROR:", err.message);
+}
 
 let hadiths = data.hadiths || [];
 
 let used = new Set();
 
 function getHadith() {
-  if (used.size >= hadiths.length) used.clear();
+  if (!hadiths.length) return null;
+
+  if (used.size >= hadiths.length) {
+    used.clear();
+  }
 
   let i;
   do {
@@ -40,17 +50,25 @@ function buildEmbed(h) {
 }
 
 async function startHadithSystem(client) {
-  const channel = await client.channels.fetch(CHANNEL_ID);
+  const channel = await client.channels.fetch(CHANNEL_ID).catch(() => null);
 
-  if (!channel) return console.log("❌ Hadith channel missing");
+  if (!channel) {
+    console.log("❌ Hadith channel not found");
+    return;
+  }
 
-  // أول حديث فور التشغيل
-  await channel.send({ embeds: [buildEmbed(getHadith())] });
+  const first = getHadith();
 
-  console.log("📿 HADITH STARTED");
+  if (first) {
+    await channel.send({ embeds: [buildEmbed(first)] });
+  }
+
+  console.log("📿 FIRST HADITH SENT");
 
   setInterval(async () => {
     const h = getHadith();
+
+    if (!h) return;
 
     await channel.send({ embeds: [buildEmbed(h)] });
 
