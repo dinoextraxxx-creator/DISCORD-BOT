@@ -1,68 +1,45 @@
-const hadiths = require("./hadiths.json");
+const fs = require("fs");
 
-let interval = null;
+module.exports = (client) => {
+  let hadithIntervalStarted = false;
 
-function safeList() {
-  try {
-    return Object.values(hadiths || {});
-  } catch (e) {
-    console.log("❌ Invalid hadiths.json", e);
-    return [];
-  }
-}
+  client.once("ready", () => {
+    if (hadithIntervalStarted) return;
+    hadithIntervalStarted = true;
 
-function randomHadith() {
-  const arr = safeList();
-  if (arr.length === 0) return null;
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+    console.log("📚 Hadith system started");
 
-function embed(h) {
-  return {
-    color: 0xFFD700,
-    title: "مُـــذَكّــــــر | حديث",
-    fields: [
-      { name: "🔸 الحديث", value: h?.text || "خطأ في البيانات" },
-      { name: "👤 الراوي", value: h?.rawi || "غير متوفر" },
-      { name: "📚 المصدر", value: h?.source || "غير متوفر" },
-      { name: "📖 البيان", value: h?.bayan || "غير متوفر" }
-    ]
-  };
-}
+    setInterval(() => {
+      try {
+        const data = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
 
-async function start(client) {
-  const channelId = "1516016586643734639";
+        const keys = Object.keys(data);
+        if (!keys.length) return;
 
-  if (interval) return;
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        const h = data[randomKey];
 
-  console.log("🚀 Hadith system booting...");
+        const channel = client.channels.cache.get("1516016586643734633");
+        if (!channel) return;
 
-  let channel;
-  try {
-    channel = await client.channels.fetch(channelId);
-  } catch (e) {
-    console.log("❌ Cannot fetch hadith channel:", e);
-    return;
-  }
+        channel.send({
+          embeds: [
+            {
+              color: 0xFFD700,
+              description: h.text,
+              fields: [
+                { name: "👤 الراوي", value: h.rawi || "—" },
+                { name: "📚 المصدر", value: h.source || "—" },
+                { name: "📖 بيان", value: h.bayan || "—" }
+              ],
+              footer: { text: "4KO • YONKO.مُـــذَكّــــــر" }
+            }
+          ]
+        });
 
-  if (!channel) {
-    console.log("❌ Hadith channel not found");
-    return;
-  }
-
-  console.log("✅ Hadith channel ready");
-
-  interval = setInterval(async () => {
-    try {
-      const h = randomHadith();
-      if (!h) return;
-
-      await channel.send({ embeds: [embed(h)] });
-      console.log("📨 Hadith sent");
-    } catch (e) {
-      console.log("❌ Hadith send error:", e);
-    }
-  }, 2 * 60 * 1000);
-}
-
-module.exports = { start };
+      } catch (err) {
+        console.log("❌ Hadith error:", err.message);
+      }
+    }, 2 * 60 * 1000); // كل دقيقتين
+  });
+};
