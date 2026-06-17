@@ -5,74 +5,89 @@ ButtonBuilder,
 ButtonStyle
 } = require("discord.js");
 
-const CHANNEL_ID = "1516405973365952633";
+const CHANNEL =
+"1516405973365952633";
 
-const ICON = null;
+const ICON =
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg?ex=6a30b301&is=6a2f6181&hm=99212fa7d1a01c5bd6253cacfb49d1b849226abffe617b60c1c53121e1805f0f&";
+
+const COLOR =
+"#FFD700";
 
 const AUTHOR =
-"مُـــذَكّــــــر | مواعيد الصلاة";
+"مُـــذَكّــــــر";
 
 const FOOTER =
-"مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
+"4KO • YONKO.مُـــذَكّــــــر";
 
 const prayers = [
+
 {
 name:"الفجر",
-time:"04:24"
+ayah:"﴿ فَأَقِمِ الصَّلَاةَ لِدُلُوكِ الشَّمْسِ إِلَىٰ غَسَقِ اللَّيْلِ وَقُرْآنَ الْفَجْرِ ۖ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا ﴾"
 },
+
 {
 name:"الظهر",
-time:"13:33"
+ayah:"﴿ فَأَقِيمُوا الصَّلَاةَ ۚ إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا ﴾"
 },
+
 {
 name:"العصر",
-time:"17:14"
+ayah:"﴿ حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ ﴾"
 },
+
 {
 name:"المغرب",
-time:"20:45"
+ayah:"﴿ وَأَقِمِ الصَّلَاةَ طَرَفَيِ النَّهَارِ وَزُلَفًا مِّنَ اللَّيْلِ ﴾"
 },
+
 {
 name:"العشاء",
-time:"22:18"
+ayah:"﴿ وَالَّذِينَ هُمْ عَلَىٰ صَلَوَاتِهِمْ يُحَافِظُونَ ﴾"
 }
+
 ];
 
-function buildEmbed(p){
+function prayerEmbed(p){
 
 return new EmbedBuilder()
 
-.setColor("#E8C547")
+.setColor(COLOR)
 
 .setAuthor({
-name:AUTHOR
+
+name:AUTHOR,
+
+iconURL:ICON
+
 })
 
 .setTitle(
-`حان موعد أذان صلاة ${p.name}`
+"حان موعد أذان صلاة ${p.name} حسب التوقيت المحلي لمدينة الرباط"
 )
 
 .setDescription(
 
-`﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾
+`قال تعالى :
 
-🕰 الوقت الأصلي:
-${p.time}
-
-🕌 الصلاة:
-${p.name}`
+${p.ayah}`
 
 )
 
 .setFooter({
-text:FOOTER
+
+text:FOOTER,
+
+iconURL:ICON
+
 })
 
 .setTimestamp();
 
 }
 
-function buildButtons(p){
+function buttons(p){
 
 return new ActionRowBuilder()
 
@@ -81,11 +96,11 @@ return new ActionRowBuilder()
 new ButtonBuilder()
 
 .setCustomId(
-`pray_${p.name}`
+"prayer_${p.name}"
 )
 
 .setLabel(
-`صلاة ${p.name}`
+"صلاة ${p.name}"
 )
 
 .setStyle(
@@ -95,7 +110,7 @@ ButtonStyle.Secondary
 new ButtonBuilder()
 
 .setCustomId(
-"azkar"
+"azan"
 )
 
 .setLabel(
@@ -112,32 +127,29 @@ ButtonStyle.Secondary
 
 async function startPrayerSystem(client){
 
-const channel =
+const ch =
 await client.channels.fetch(
-CHANNEL_ID
+CHANNEL
 );
 
 let i = 0;
 
-await channel.send({
+async function send(){
+
+const p =
+prayers[i];
+
+await ch.send({
 
 embeds:[
-buildEmbed(
-prayers[i]
-)
+prayerEmbed(p)
 ],
 
 components:[
-buildButtons(
-prayers[i]
-)
+buttons(p)
 ]
 
 });
-
-setInterval(
-
-async()=>{
 
 i++;
 
@@ -147,23 +159,13 @@ i>=prayers.length
 i=0;
 }
 
-await channel.send({
+}
 
-embeds:[
-buildEmbed(
-prayers[i]
-)
-],
+await send();
 
-components:[
-buildButtons(
-prayers[i]
-)
-]
+setInterval(
 
-});
-
-},
+send,
 
 60000
 
@@ -172,5 +174,7 @@ prayers[i]
 }
 
 module.exports={
+
 startPrayerSystem
+
 };
