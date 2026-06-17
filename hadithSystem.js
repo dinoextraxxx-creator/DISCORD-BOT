@@ -2,24 +2,30 @@ const hadiths = require("./hadiths.json");
 
 let interval = null;
 
-function list() {
-  return Object.values(hadiths);
+function safeList() {
+  try {
+    return Object.values(hadiths || {});
+  } catch (e) {
+    console.log("❌ Invalid hadiths.json", e);
+    return [];
+  }
 }
 
 function randomHadith() {
-  const arr = list();
+  const arr = safeList();
+  if (arr.length === 0) return null;
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function embed(h) {
   return {
     color: 0xFFD700,
-    author: { name: "مُـــذَكّــــــر | الأحاديث" },
+    title: "مُـــذَكّــــــر | حديث",
     fields: [
-      { name: "🔸 الحديث", value: h.text || "N/A" },
-      { name: "👤 الراوي", value: h.rawi || "N/A" },
-      { name: "📚 المصدر", value: h.source || "N/A" },
-      { name: "📖 البيان", value: h.bayan || "N/A" }
+      { name: "🔸 الحديث", value: h?.text || "خطأ في البيانات" },
+      { name: "👤 الراوي", value: h?.rawi || "غير متوفر" },
+      { name: "📚 المصدر", value: h?.source || "غير متوفر" },
+      { name: "📖 البيان", value: h?.bayan || "غير متوفر" }
     ]
   };
 }
@@ -29,39 +35,32 @@ async function start(client) {
 
   if (interval) return;
 
-  console.log("🚀 Hadith system starting...");
+  console.log("🚀 Hadith system booting...");
 
   let channel;
   try {
     channel = await client.channels.fetch(channelId);
   } catch (e) {
-    console.error("❌ Channel fetch failed (HADITH):", e);
+    console.log("❌ Cannot fetch hadith channel:", e);
     return;
   }
 
   if (!channel) {
-    console.error("❌ Hadith channel not found");
+    console.log("❌ Hadith channel not found");
     return;
   }
 
-  console.log("✅ Hadith channel OK");
-
-  // إرسال أول حديث فوراً
-  try {
-    const first = randomHadith();
-    await channel.send({ embeds: [embed(first)] });
-    console.log("📨 First hadith sent");
-  } catch (e) {
-    console.error("❌ First send failed:", e);
-  }
+  console.log("✅ Hadith channel ready");
 
   interval = setInterval(async () => {
     try {
       const h = randomHadith();
+      if (!h) return;
+
       await channel.send({ embeds: [embed(h)] });
       console.log("📨 Hadith sent");
     } catch (e) {
-      console.error("❌ Hadith interval error:", e);
+      console.log("❌ Hadith send error:", e);
     }
   }, 2 * 60 * 1000);
 }
