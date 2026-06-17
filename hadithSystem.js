@@ -1,45 +1,58 @@
 const fs = require("fs");
 
-module.exports = (client) => {
-  const CHANNEL_ID = "1516016586643734639";
+const HADITH_CHANNEL = "1516016586643734639";
 
-  let hadiths;
-  try {
-    hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
-  } catch (err) {
-    console.error("❌ خطأ في قراءة hadiths.json:", err);
-    return;
-  }
+let lastIndex = null;
+let hadithData = null;
 
-  const keys = Object.keys(hadiths);
+function loadHadiths() {
+  const raw = fs.readFileSync("./hadiths.json", "utf8");
+  hadithData = JSON.parse(raw);
+}
 
-  function sendHadith() {
-    try {
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      const h = hadiths[randomKey];
+function getRandomHadith() {
+  const keys = Object.keys(hadithData);
 
-      const channel = client.channels.cache.get(CHANNEL_ID);
-      if (!channel) return console.log("❌ قناة الأحاديث غير موجودة");
+  let index;
+  do {
+    index = Math.floor(Math.random() * keys.length);
+  } while (index === lastIndex && keys.length > 1);
 
-      const message =
-        `${h.text}\n\n` +
-        `${h.rawi}\n` +
-        `${h.source}\n` +
-        `${h.bayan}`;
+  lastIndex = index;
+  return hadithData[keys[index]];
+}
 
-      channel.send(message);
-    } catch (err) {
-      console.error("❌ خطأ في إرسال الحديث:", err);
-    }
-  }
+function buildEmbed(h) {
+  const { EmbedBuilder } = require("discord.js");
 
-  client.once("ready", () => {
-    console.log("📖 نظام الأحاديث شغال");
+  return new EmbedBuilder()
+    .setColor("#FFD700")
+    .setTitle("📖 حديث نبوي شريف")
+    .setDescription(h.text)
+    .addFields(
+      { name: "👤 الراوي", value: h.rawi, inline: false },
+      { name: "📚 المصدر", value: h.source, inline: false },
+      { name: "📖 بيان", value: h.bayan, inline: false }
+    )
+    .setFooter({ text: "4KO • YONKO" });
+}
 
-    // إرسال أول حديث فور التشغيل
-    sendHadith();
+function sendHadith(client) {
+  const channel = client.channels.cache.get(HADITH_CHANNEL);
+  if (!channel) return;
 
-    // كل دقيقتين
-    setInterval(sendHadith, 120000);
-  });
-};
+  const hadith = getRandomHadith();
+  const embed = buildEmbed(hadith);
+
+  channel.send({ embeds: [embed] }).catch(() => {});
+}
+
+function start(client) {
+  loadHadiths();
+
+  // 📖 كل دقيقتين
+  sendHadith(client);
+  setInterval(() => sendHadith(client), 120000);
+}
+
+module.exports = { start };
