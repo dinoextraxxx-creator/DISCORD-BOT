@@ -1,37 +1,59 @@
 module.exports = (client) => {
-  const channelId = "1516405973365952633";
+  const CHANNEL_ID = "1516405973365952633";
 
-  client.once("ready", async () => {
-    console.log("🕌 Prayer system ACTIVE");
+  // ⛔ عدل هذه الأوقات حسب مدينتك
+  const prayers = [
+    { name: "الفجر", time: "05:10" },
+    { name: "الظهر", time: "13:30" },
+    { name: "العصر", time: "17:00" },
+    { name: "المغرب", time: "19:30" },
+    { name: "العشاء", time: "21:00" }
+  ];
 
-    const channel = client.channels.cache.get(channelId);
-    if (!channel) return;
+  const sentToday = new Set();
 
-    const prayers = [
-      { name: "الفجر", text: "حان الآن موعد صلاة الفجر 🕌" },
-      { name: "الظهر", text: "حان الآن موعد صلاة الظهر 🕌" },
-      { name: "العصر", text: "حان الآن موعد صلاة العصر 🕌" },
-      { name: "المغرب", text: "حان الآن موعد صلاة المغرب 🕌" },
-      { name: "العشاء", text: "حان الآن موعد صلاة العشاء 🕌" }
-    ];
+  function getMinutes(time) {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  }
 
-    for (let i = 0; i < prayers.length; i++) {
-      setTimeout(() => {
-        channel.send({
-          embeds: [
-            {
-              color: 0xFFD700,
-              author: {
-                name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة"
-              },
-              description: `🔸 ${prayers[i].text}`,
-              footer: {
-                text: "موعد الأذان قد يتغير من مدينة لأخرى • 4KO • YONKO.مُـــذَكّــــــر"
-              }
-            }
-          ]
-        }).catch(() => {});
-      }, i * 60000); // ⬅️ دقيقة بين كل صلاة
+  function nowMinutes() {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  }
+
+  function resetAtMidnight() {
+    sentToday.clear();
+  }
+
+  function checkPrayers() {
+    const now = nowMinutes();
+
+    for (const p of prayers) {
+      const key = p.name;
+
+      if (sentToday.has(key)) continue;
+
+      if (now >= getMinutes(p.time)) {
+        const channel = client.channels.cache.get(CHANNEL_ID);
+        if (channel) {
+          channel.send(`🕌 حان الآن وقت صلاة ${p.name}`);
+          sentToday.add(key);
+        }
+      }
     }
+  }
+
+  client.once("ready", () => {
+    console.log("🕌 نظام الصلاة شغال");
+
+    // تشغيل فوري
+    checkPrayers();
+
+    // فحص كل دقيقة
+    setInterval(checkPrayers, 60000);
+
+    // إعادة التصفير يومياً (كل 24 ساعة)
+    setInterval(resetAtMidnight, 24 * 60 * 60 * 1000);
   });
 };
