@@ -7,23 +7,21 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// ================= DEBUG =================
+// ================= SAFETY =================
 
-console.log("🔥 FILE LOADED");
+process.on("unhandledRejection", console.log);
+process.on("uncaughtException", console.log);
 
 // ================= READY =================
 
 client.once("ready", async () => {
-  console.log("BOT READY");
+  console.log("🔥 BOT READY");
 
   try {
-    console.log("🟢 STARTING PRAYER SYSTEM");
-    startPrayerSystem(client);
+    await startPrayerSystem(client);
+    await startHadithSystem(client);
 
-    console.log("🟢 STARTING HADITH SYSTEM");
-    startHadithSystem(client);
-
-    console.log("✅ ALL SYSTEMS LOADED");
+    console.log("✅ ALL SYSTEMS RUNNING");
 
   } catch (err) {
     console.log("❌ SYSTEM ERROR:", err);
