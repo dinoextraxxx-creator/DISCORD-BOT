@@ -6,14 +6,14 @@ EmbedBuilder
 }=require("discord.js");
 
 const startPrayerSystem=require("./prayerSystem");
+const PRAYER_DETAILS=require("./prayers");
 
-const PRAYER_ICON =
-"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
+const client=new Client({
+intents:[GatewayIntentBits.Guilds]
+});
 
-const BUTTON_ICON =
+const BUTTON_ICON=
 "https://cdn.discordapp.com/attachments/1515161056975126705/1516909922040811610/-_4.jpg";
-
-const PRAYER_DETAILS=require("./prayerDetails");
 
 const AZKAR=`
 1- يقول مثل ما يقول المؤذن إلا في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
@@ -27,10 +27,6 @@ const AZKAR=`
 5- يدعو لنفسه بين الأذان والإقامة فإن الدعاء حينئذٍ لا يرد
 `;
 
-const client=new Client({
-intents:[GatewayIntentBits.Guilds]
-});
-
 client.once(Events.ClientReady,()=>{
 console.log("BOT READY");
 startPrayerSystem(client);
@@ -42,20 +38,9 @@ if(!i.isButton()) return;
 
 try{
 
-// ────────────────
-// زر الصلاة
-// ────────────────
 if(i.customId.startsWith("pray_")){
 
 const prayer=i.customId.replace("pray_","");
-
-const text=PRAYER_DETAILS?.[prayer];
-
-if(!text)
-return i.reply({
-ephemeral:true,
-content:"حدث خطأ في تحميل تفاصيل الصلاة"
-});
 
 return i.reply({
 ephemeral:true,
@@ -66,7 +51,7 @@ new EmbedBuilder()
 name:"مُـــذَكّــــــر",
 iconURL:BUTTON_ICON
 })
-.setDescription(text)
+.setDescription(PRAYER_DETAILS?.[prayer] || "لا توجد بيانات")
 .setFooter({
 text:"4KO • YONKO.مُـــذَكّــــــر",
 iconURL:BUTTON_ICON
@@ -76,9 +61,6 @@ iconURL:BUTTON_ICON
 });
 }
 
-// ────────────────
-// زر الأذكار
-// ────────────────
 if(i.customId==="azkar"){
 
 return i.reply({
@@ -90,7 +72,7 @@ new EmbedBuilder()
 name:"مُـــذَكّــــــر",
 iconURL:BUTTON_ICON
 })
-.setTitle("اذكـــــــار الصــــــلاة")
+.setTitle("اذكـــــــار الصــــلاة")
 .setDescription(AZKAR)
 .setFooter({
 text:"4KO • YONKO.مُـــذَكّــــــر",
@@ -101,17 +83,14 @@ iconURL:BUTTON_ICON
 });
 }
 
-}catch(err){
-
-console.log("Interaction Error:",err);
-
+}catch(e){
+console.log("Interaction error:",e);
 if(!i.replied){
 return i.reply({
 ephemeral:true,
-content:"حدث خطأ داخلي"
+content:"حدث خطأ"
 });
 }
-
 }
 
 });
