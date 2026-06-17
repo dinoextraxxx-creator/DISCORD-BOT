@@ -1,90 +1,61 @@
-const fs =
-require("fs");
-
+const fs = require("fs");
 const {
 EmbedBuilder
-}=
-require(
-"discord.js"
-);
+} = require("discord.js");
 
-const CHANNEL_ID =
+const CHANNEL =
 "1516016586643734639";
 
 const ICON =
-null;
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg?ex=6a30b301&is=6a2f6181&hm=99212fa7d1a01c5bd6253cacfb49d1b849226abffe617b60c1c53121e1805f0f&";
+
+const COLOR =
+"#FFD700";
+
+const AUTHOR =
+"مُـــذَكّــــــر";
 
 const FOOTER =
-"مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
+"4KO • YONKO.مُـــذَكّــــــر";
 
 const data =
 JSON.parse(
-
-fs.readFileSync(
-
-"./hadiths.json",
-
-"utf8"
-
-)
-
+fs.readFileSync("./hadiths.json","utf8")
 );
 
 const hadiths =
 data.hadiths;
 
-let used =
-new Set();
+let used = new Set();
 
-function randomHadith(){
+function getRandom(){
 
-if(
-used.size>=hadiths.length
-){
-
+if(used.size >= hadiths.length){
 used.clear();
-
 }
 
 let i;
 
 do{
+i = Math.floor(Math.random() * hadiths.length);
+} while(used.has(i));
 
-i=
-Math.floor(
-
-Math.random()
-
-*
-hadiths.length
-
-);
-
-}
-
-while(
-
-used.has(
-i
-)
-
-);
-
-used.add(
-i
-);
+used.add(i);
 
 return hadiths[i];
 
 }
 
-function buildEmbed(h){
+function embed(h){
 
 return new EmbedBuilder()
 
-.setColor(
-"#E8C547"
-)
+.setColor(COLOR)
+
+.setAuthor({
+name:AUTHOR,
+iconURL:ICON
+})
 
 .setDescription(
 
@@ -92,21 +63,15 @@ return new EmbedBuilder()
 
 «${h.text}»
 
-👤 ➤ الراوي :
+👤 ➤ الراوي : ${h.narrator}
 
-${h.narrator}
-
-📚 ➤ المصدر :
-
-${h.source}`
+📚 ➤ المصدر : ${h.source}`
 
 )
 
 .setFooter({
-
-text:
-FOOTER
-
+text:FOOTER,
+iconURL:ICON
 })
 
 .setTimestamp();
@@ -115,45 +80,27 @@ FOOTER
 
 async function startHadithSystem(client){
 
-const channel =
-await client.channels.fetch(
-CHANNEL_ID
-);
+const ch =
+await client.channels.fetch(CHANNEL);
 
-await channel.send({
+async function send(){
+
+await ch.send({
 
 embeds:[
-buildEmbed(
-randomHadith()
-)
+embed(getRandom())
 ]
 
 });
-
-setInterval(
-
-async()=>{
-
-await channel.send({
-
-embeds:[
-buildEmbed(
-randomHadith()
-)
-]
-
-});
-
-},
-
-120000
-
-);
 
 }
 
-module.exports={
+await send();
 
+setInterval(send, 120000);
+
+}
+
+module.exports = {
 startHadithSystem
-
 };
