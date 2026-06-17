@@ -1,44 +1,40 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-// ================= CONFIG =================
-
 const CHANNEL_ID = "1516405973365952633";
 
 const ICON = "YOUR_ICON_URL";
 const AUTHOR = "مُـــذَكّــــــر | مواعيد الصلاة";
 const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
-// ================= PRAYERS TEST DATA =================
-
 const prayers = {
   fajr: {
     title: "الفجر",
     verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    description: "صلاة الفجر هي مقياس براءة الإنسان من النفاق",
+    desc: "صلاة الفجر هي مقياس براءة الإنسان من النفاق",
     rakah: "• عدد ركعاتها: 2"
   },
   dhuhr: {
     title: "الظهر",
     verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    description: "صلاة الظهر هي أول صلاة فُرضت وصُلّيت",
+    desc: "صلاة الظهر هي أول صلاة فُرضت",
     rakah: "• عدد ركعاتها: 4"
   },
   asr: {
     title: "العصر",
     verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    description: "صلاة العصر هي الصلاة الوسطى",
+    desc: "صلاة العصر هي الصلاة الوسطى",
     rakah: "• عدد ركعاتها: 4"
   },
   maghrib: {
     title: "المغرب",
     verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    description: "صلاة المغرب هي وتر النهار",
+    desc: "صلاة المغرب هي وتر النهار",
     rakah: "• عدد ركعاتها: 3"
   },
   isha: {
     title: "العشاء",
     verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    description: "صلاة العشاء هي أثقل صلاة على المنافقين",
+    desc: "صلاة العشاء هي أثقل صلاة على المنافقين",
     rakah: "• عدد ركعاتها: 4"
   }
 };
@@ -53,7 +49,7 @@ function buildEmbed(p) {
     .setDescription(
 `${p.verse}
 
-${p.description}
+${p.desc}
 
 ${p.rakah}`
     )
@@ -77,29 +73,24 @@ function buildButtons(key) {
   );
 }
 
-// ================= TEST SEND ALL =================
+// ================= START =================
 
 async function startPrayerSystem(client) {
-  console.log("🟢 PRAYER TEST MODE STARTED");
+  console.log("🟢 Prayer System Started");
 
   const channel = await client.channels.fetch(CHANNEL_ID).catch(() => null);
 
-  if (!channel) {
-    console.log("❌ CHANNEL NOT FOUND");
-    return;
-  }
+  if (!channel) return console.log("❌ PRAYER CHANNEL NOT FOUND");
 
-  // إرسال كل الصلوات فور التشغيل (TEST ONLY)
+  // إرسال تجريبي دفعة واحدة عند التشغيل
   for (const key of Object.keys(prayers)) {
     await channel.send({
       embeds: [buildEmbed(prayers[key])],
       components: [buildButtons(key)]
     });
-
-    console.log("📤 SENT:", key);
   }
 
-  console.log("✅ ALL PRAYERS SENT (TEST COMPLETE)");
+  console.log("✅ PRAYERS SENT (TEST MODE)");
 }
 
 module.exports = { startPrayerSystem };
