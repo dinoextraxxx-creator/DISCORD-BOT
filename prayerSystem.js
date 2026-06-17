@@ -7,7 +7,8 @@ ButtonStyle
 
 const CHANNEL = "1516405973365952633";
 
-const ICON = "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
+const ICON =
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
 const COLOR = "#FFD700";
 
@@ -15,16 +16,10 @@ const AUTHOR = "مُـــذَكّــــــر";
 
 const FOOTER = "4KO • YONKO.مُـــذَكّــــــر";
 
-const prayers = [
-"الفجر",
-"الظهر",
-"العصر",
-"المغرب",
-"العشاء"
-];
+const prayers = ["الفجر","الظهر","العصر","المغرب","العشاء"];
 
 let index = 0;
-let started = false;
+let locked = false;
 
 function embed(name){
 
@@ -40,7 +35,9 @@ iconURL: ICON
 .setTitle(`صلاة ${name}`)
 
 .setDescription(
-`قال تعالى :
+`﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾
+
+قال تعالى :
 
 ***﴿ ذكر مرتبط بصلاة ${name} ﴾***`
 )
@@ -58,6 +55,7 @@ function buttons(name){
 
 return new ActionRowBuilder()
 .addComponents(
+
 new ButtonBuilder()
 .setCustomId(`prayer_${name}`)
 .setLabel(`صلاة ${name}`)
@@ -67,11 +65,17 @@ new ButtonBuilder()
 .setCustomId("azkar")
 .setLabel("أذكار الأذان")
 .setStyle(ButtonStyle.Secondary)
+
 );
 
 }
 
 async function send(client){
+
+if(locked) return;
+locked = true;
+
+try{
 
 const ch = await client.channels.fetch(CHANNEL);
 
@@ -88,12 +92,13 @@ if(index >= prayers.length){
 index = 0;
 }
 
+}finally{
+locked = false;
+}
+
 }
 
 async function startPrayerSystem(client){
-
-if(started) return;
-started = true;
 
 await send(client);
 
