@@ -7,20 +7,20 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// IDs القنوات
+// القنوات
 const HADITH_CHANNEL = "1516016586643734639";
 const PRAYER_CHANNEL = "1516405973365952633";
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
-  // تشغيل نظام الأحاديث
+  // 📖 نظام الأحاديث
   const hadithBot = new HadithSystem(client, HADITH_CHANNEL, hadiths);
   hadithBot.start();
 
-  // تشغيل نظام الصلاة
+  // 🕌 نظام الصلاة
   const prayerBot = new PrayerSystem(client, PRAYER_CHANNEL);
-  prayerBot.start();
+  await prayerBot.start();
 });
 
 client.login("PUT_YOUR_BOT_TOKEN_HERE");
