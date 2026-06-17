@@ -1,7 +1,5 @@
 const fs = require("fs");
-const {
-EmbedBuilder
-} = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 const CHANNEL = "1516016586643734639";
 
@@ -17,28 +15,24 @@ const FOOTER = "قد يختلف موعد الاذان من مدينة لأخرى
 const TITLE =
 "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾";
 
-const data =
-JSON.parse(fs.readFileSync("./hadiths.json","utf8"));
-
+const data = JSON.parse(fs.readFileSync("./hadiths.json","utf8"));
 const hadiths = data.hadiths;
 
 let used = new Set();
-let locked = false;
+let started = false;
 
-function getHadith(){
+function pick(){
 
 if(used.size >= hadiths.length){
 used.clear();
 }
 
 let i;
-
 do{
 i = Math.floor(Math.random() * hadiths.length);
 }while(used.has(i));
 
 used.add(i);
-
 return hadiths[i];
 }
 
@@ -56,13 +50,11 @@ iconURL: ICON
 .setTitle(TITLE)
 
 .setDescription(
-`🔸 ➤ قال رسول الله ﷺ:
+`«${h.text}»
 
-«${h.text}»
+👤 الراوي: ${h.narrator}
 
-👤 ➤ الراوي : ${h.narrator}
-
-📚 ➤ المصدر : ${h.source}`
+📚 المصدر: ${h.source}`
 )
 
 .setFooter({
@@ -74,33 +66,27 @@ iconURL: ICON
 
 }
 
-async function send(client){
+async function loop(client){
 
-if(locked) return;
-locked = true;
-
-try{
+if(started) return;
+started = true;
 
 const ch = await client.channels.fetch(CHANNEL);
 
+async function send(){
+
 await ch.send({
-embeds:[embed(getHadith())]
+embeds:[embed(pick())]
 });
 
-}finally{
-locked = false;
+setTimeout(send, 120000);
 }
 
+send();
 }
 
 async function startHadithSystem(client){
-
-await send(client);
-
-setInterval(() => {
-send(client);
-}, 120000);
-
+await loop(client);
 }
 
 module.exports = { startHadithSystem };
