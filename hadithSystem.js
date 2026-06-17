@@ -12,19 +12,20 @@ class HadithSystem {
       const channel = await this.client.channels.fetch(this.channelId);
       if (!channel) return;
 
-      const random = this.hadiths[Math.floor(Math.random() * this.hadiths.length)];
+      const random =
+        this.hadiths[Math.floor(Math.random() * this.hadiths.length)];
 
       const embed = new EmbedBuilder()
         .setColor("#FFD700")
         .setDescription(`🔸 قال رسول الله ﷺ:\n\n«${random.text}»`)
         .addFields(
-          { name: "👤 الراوي", value: random.rawi || "غير مذكور" },
-          { name: "📚 المصدر", value: random.source || "غير مذكور" },
-          { name: "📖 بيان", value: random.bayan || "لا يوجد" }
+          { name: "👤 الراوي", value: random.rawi || "غير مذكور", inline: false },
+          { name: "📚 المصدر", value: random.source || "غير مذكور", inline: false },
+          { name: "📖 بيان", value: random.bayan || "لا يوجد", inline: false }
         )
         .setFooter({ text: "4KO • YONKO.Mُـــذَكّــــــر" });
 
-      channel.send({ embeds: [embed] });
+      await channel.send({ embeds: [embed] });
     };
 
     // تشغيل فوري
