@@ -3,32 +3,29 @@ const {
 EmbedBuilder
 } = require("discord.js");
 
-const CHANNEL =
-"1516016586643734639";
+const CHANNEL = "1516016586643734639";
 
 const ICON =
-"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg?ex=6a30b301&is=6a2f6181&hm=99212fa7d1a01c5bd6253cacfb49d1b849226abffe617b60c1c53121e1805f0f&";
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
-const COLOR =
-"#FFD700";
+const COLOR = "#FFD700";
 
-const AUTHOR =
-"مُـــذَكّــــــر";
+const AUTHOR = "مُـــذَكّــــــر";
 
-const FOOTER =
-"4KO • YONKO.مُـــذَكّــــــر";
+const FOOTER = "4KO • YONKO.مُـــذَكّــــــر";
+
+const header =
+"﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾";
 
 const data =
-JSON.parse(
-fs.readFileSync("./hadiths.json","utf8")
-);
+JSON.parse(fs.readFileSync("./hadiths.json","utf8"));
 
-const hadiths =
-data.hadiths;
+const hadiths = data.hadiths;
 
 let used = new Set();
+let locked = false;
 
-function getRandom(){
+function getHadith(){
 
 if(used.size >= hadiths.length){
 used.clear();
@@ -38,12 +35,11 @@ let i;
 
 do{
 i = Math.floor(Math.random() * hadiths.length);
-} while(used.has(i));
+}while(used.has(i));
 
 used.add(i);
 
 return hadiths[i];
-
 }
 
 function embed(h){
@@ -53,9 +49,11 @@ return new EmbedBuilder()
 .setColor(COLOR)
 
 .setAuthor({
-name:AUTHOR,
-iconURL:ICON
+name: AUTHOR,
+iconURL: ICON
 })
+
+.setTitle(header)
 
 .setDescription(
 
@@ -70,37 +68,41 @@ iconURL:ICON
 )
 
 .setFooter({
-text:FOOTER,
-iconURL:ICON
+text: FOOTER,
+iconURL: ICON
 })
 
 .setTimestamp();
 
 }
 
-async function startHadithSystem(client){
+async function send(client){
 
-const ch =
-await client.channels.fetch(CHANNEL);
+if(locked) return;
+locked = true;
 
-async function send(){
+try{
+
+const ch = await client.channels.fetch(CHANNEL);
 
 await ch.send({
-
-embeds:[
-embed(getRandom())
-]
-
+embeds:[embed(getHadith())]
 });
 
+}finally{
+locked = false;
 }
 
-await send();
+}
 
-setInterval(send, 120000);
+async function startHadithSystem(client){
+
+await send(client);
+
+setInterval(() => {
+send(client);
+}, 120000);
 
 }
 
-module.exports = {
-startHadithSystem
-};
+module.exports = { startHadithSystem };
