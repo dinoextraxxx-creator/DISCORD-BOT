@@ -1,31 +1,33 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 
-// ================= SYSTEMS =================
-
 const { startPrayerSystem } = require("./prayerSystem");
 const { startHadithSystem } = require("./hadithSystem");
-
-// ================= CLIENT =================
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// ================= SAFETY =================
+// ================= DEBUG =================
 
-process.on("unhandledRejection", console.log);
-process.on("uncaughtException", console.log);
+console.log("🔥 FILE LOADED");
 
 // ================= READY =================
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log("BOT READY");
 
-  // تشغيل نظام الصلاة (أوقات + إرسال طبيعي)
-  startPrayerSystem(client);
+  try {
+    console.log("🟢 STARTING PRAYER SYSTEM");
+    startPrayerSystem(client);
 
-  // تشغيل نظام الأحاديث (كل دقيقتين + بدون تكرار)
-  startHadithSystem(client);
+    console.log("🟢 STARTING HADITH SYSTEM");
+    startHadithSystem(client);
+
+    console.log("✅ ALL SYSTEMS LOADED");
+
+  } catch (err) {
+    console.log("❌ SYSTEM ERROR:", err);
+  }
 });
 
 // ================= LOGIN =================
