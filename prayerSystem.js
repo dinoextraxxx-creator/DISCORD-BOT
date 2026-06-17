@@ -5,9 +5,15 @@ ButtonBuilder,
 ButtonStyle
 }=require("discord.js");
 
-const prayers=require("./prayers");
+const axios=require("axios");
 
 const CHANNEL="1516405973365952633";
+
+const CITY="Casablanca";
+const COUNTRY="Morocco";
+const METHOD=21; // Morocco
+
+const SENT=new Set();
 
 function sleep(ms){
 return new Promise(r=>setTimeout(r,ms));
@@ -45,13 +51,29 @@ return `${intro}
 
 }
 
-module.exports=async(client)=>{
+function createButtons(prayer){
 
-const channel=await client.channels.fetch(CHANNEL);
+return new ActionRowBuilder()
 
-for(const prayer of prayers){
+.addComponents(
 
-const embed=new EmbedBuilder()
+new ButtonBuilder()
+.setCustomId(`pray_${prayer}`)
+.setLabel(`صلاة ${prayer}`)
+.setStyle(ButtonStyle.Secondary),
+
+new ButtonBuilder()
+.setCustomId("azkar")
+.setLabel("اذكار الصلاة")
+.setStyle(ButtonStyle.Secondary)
+
+);
+
+}
+
+function createEmbed(prayer){
+
+return new EmbedBuilder()
 
 .setColor("#FFFF00")
 
@@ -75,39 +97,136 @@ iconURL:global.PRAYER_ICON
 
 .setTimestamp();
 
-const row=new ActionRowBuilder()
+}
 
-.addComponents(
+async function getPrayerTimes(){
 
-new ButtonBuilder()
+const url=
+`https://api.aladhan.com/v1/timingsByCity?city=${CITY}&country=${COUNTRY}&method=${METHOD}`;
 
-.setCustomId(`pray_${prayer}`)
+const res=await axios.get(url);
 
-.setLabel(`صلاة ${prayer}`)
+return res.data.data.timings;
 
-.setStyle(ButtonStyle.Secondary),
+}
 
-new ButtonBuilder()
+function nextDateFromTime(hhmm){
 
-.setCustomId("azkar")
+const now=new Date();
 
-.setLabel("اذكار الصلاة")
+const [h,m]=hhmm.split(":").map(Number);
 
-.setStyle(ButtonStyle.Secondary)
+const d=new Date();
 
-);
+d.setHours(h);
+d.setMinutes(m);
+d.setSeconds(0);
+
+if(d<now){
+
+d.setDate(d.getDate()+1);
+
+}
+
+return d;
+
+}
+
+async function sendPrayer(client,prayer){
+
+const today=
+new Date().toDateString();
+
+const key=
+`${today}-${prayer}`;
+
+if(SENT.has(key)) return;
+
+SENT.add(key);
+
+const channel=
+await client.channels.fetch(CHANNEL);
 
 await channel.send({
 
-embeds:[embed],
+embeds:[
+createEmbed(prayer)
+],
 
-components:[row]
+components:[
+createButtons(prayer)
+]
 
 });
 
-if(prayer!=="العشاء"){
+}
 
-await sleep(60000);
+module.exports=async(client)=>{
+
+console.log("Prayer realtime scheduler started");
+
+while(true){
+
+try{
+
+const timings=
+await getPrayerTimes();
+
+const schedule=[
+
+["الفجر",timings.Fajr],
+["الظهر",timings.Dhuhr],
+["العصر",timings.Asr],
+["المغرب",timings.Maghrib],
+["العشاء",timings.Isha]
+
+];
+
+for(const item of schedule){
+
+const prayer=item[0];
+
+const time=item[1];
+
+const target=
+nextDateFromTime(time);
+
+const wait=
+target-Date.now();
+
+if(wait>0){
+
+console.log(
+`Waiting ${prayer} (${time})`
+);
+
+await sleep(wait);
+
+}
+
+await sendPrayer(
+client,
+prayer
+);
+
+}
+
+SENT.clear();
+
+await sleep(
+60000
+);
+
+}catch(err){
+
+console.log(
+"Prayer Error:",
+err.message
+);
+
+await sleep(
+300000
+);
 
 }
 
