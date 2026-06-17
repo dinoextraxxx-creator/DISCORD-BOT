@@ -1,29 +1,59 @@
 const fs = require("fs");
 const { EmbedBuilder } = require("discord.js");
 
-const CHANNEL_ID = "1516405973365952633";
+// ================= CONFIG =================
+
+const CHANNEL_ID = "1516016586643734639";
+
 const ICON = "YOUR_ICON_URL";
 const AUTHOR = "مُـــذَكّــــــر | الأحاديث";
 const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
+
+// ================= LOAD HADITHS =================
 
 let hadiths = [];
 
 try {
   hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8")).hadiths || [];
-} catch (e) {
-  console.log("JSON ERROR:", e);
+} catch (err) {
+  console.log("❌ JSON ERROR:", err);
+  hadiths = [];
 }
 
-function randomHadith() {
+// ================= NO REPEAT SYSTEM =================
+
+let used = new Set();
+
+// ================= GET RANDOM WITHOUT REPEAT =================
+
+function getHadith() {
   if (!hadiths.length) return null;
-  return hadiths[Math.floor(Math.random() * hadiths.length)];
+
+  // إعادة التصفير بعد انتهاء 100%
+  if (used.size >= hadiths.length) {
+    used.clear();
+  }
+
+  let index;
+
+  do {
+    index = Math.floor(Math.random() * hadiths.length);
+  } while (used.has(index));
+
+  used.add(index);
+
+  return hadiths[index];
 }
 
-function build(h) {
+// ================= EMBED =================
+
+function buildEmbed(h) {
+  const text = h.text.replace("قال رسول الله ﷺ:", "").trim();
+
   return new EmbedBuilder()
     .setColor("#E8C547")
     .setDescription(
-`🔸 ➤ قال رسول الله ﷺ: «${h.text.replace("قال رسول الله ﷺ:", "").trim()}»
+`🔸 ➤ قال رسول الله ﷺ: «${text}»
 
 👤 ➤ الراوي : ${h.narrator}
 
@@ -33,32 +63,36 @@ function build(h) {
     .setTimestamp();
 }
 
-async function send(client) {
+// ================= SEND =================
+
+async function sendHadith(client) {
   try {
     const channel = await client.channels.fetch(CHANNEL_ID);
     if (!channel) return;
 
-    const h = randomHadith();
+    const h = getHadith();
     if (!h) return;
 
-    await channel.send({ embeds: [build(h)] });
+    await channel.send({ embeds: [buildEmbed(h)] });
 
-    console.log("📿 Hadith sent");
+    console.log("📿 HADITH SENT");
 
   } catch (err) {
-    console.log("SEND ERROR:", err);
+    console.log("❌ SEND ERROR:", err);
   }
 }
 
+// ================= START SYSTEM =================
+
 function startHadithSystem(client) {
-  console.log("📿 Hadith system loaded");
+  console.log("📿 Hadith System Started");
 
   // إرسال فوري عند التشغيل
-  send(client);
+  sendHadith(client);
 
   // كل دقيقتين
   setInterval(() => {
-    send(client);
+    sendHadith(client);
   }, 2 * 60 * 1000);
 }
 
