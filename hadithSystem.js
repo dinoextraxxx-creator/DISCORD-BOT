@@ -1,51 +1,38 @@
 const { EmbedBuilder } = require("discord.js");
-const fs = require("fs");
 
-const hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
-
-let lastIndex = -1;
-
-function getRandomHadith() {
-  let index;
-
-  do {
-    index = Math.floor(Math.random() * hadiths.length);
-  } while (index === lastIndex && hadiths.length > 1);
-
-  lastIndex = index;
-  return hadiths[index];
-}
-
-function buildEmbed(h) {
-  return new EmbedBuilder()
-    .setColor("#FFD700")
-    .setTitle("📜 حديث نبوي شريف")
-    .setDescription(`🔸 ${h.text}`)
-    .addFields(
-      { name: "👤 الراوي", value: h.rawi || "غير مذكور" },
-      { name: "📚 المصدر", value: h.source || "غير مذكور" },
-      { name: "📖 البيان", value: h.bayan || "لا يوجد" }
-    )
-    .setFooter({ text: "Hadith System" });
-}
-
-async function startHadithSystem(client) {
-  const channel = await client.channels.fetch("1516016586643734639").catch(() => null);
-
-  if (!channel) {
-    console.log("❌ Hadith channel not found");
-    return;
+class HadithSystem {
+  constructor(client, channelId, hadiths) {
+    this.client = client;
+    this.channelId = channelId;
+    this.hadiths = hadiths;
   }
 
-  console.log("✅ Hadith system started");
+  start() {
+    const sendHadith = async () => {
+      const channel = await this.client.channels.fetch(this.channelId);
+      if (!channel) return;
 
-  // إرسال اختبار فوري عند التشغيل
-  channel.send({ content: "📜 تم تشغيل نظام الأحاديث" });
+      const random = this.hadiths[Math.floor(Math.random() * this.hadiths.length)];
 
-  setInterval(async () => {
-    const hadith = getRandomHadith();
-    await channel.send({ embeds: [buildEmbed(hadith)] });
-  }, 2 * 60 * 1000);
+      const embed = new EmbedBuilder()
+        .setColor("#FFD700")
+        .setDescription(`🔸 قال رسول الله ﷺ:\n\n«${random.text}»`)
+        .addFields(
+          { name: "👤 الراوي", value: random.rawi || "غير مذكور", inline: false },
+          { name: "📚 المصدر", value: random.source || "غير مذكور", inline: false },
+          { name: "📖 بيان", value: random.bayan || "لا يوجد", inline: false }
+        )
+        .setFooter({ text: "4KO • YONKO.Mُـــذَكّــــــر" });
+
+      channel.send({ embeds: [embed] });
+    };
+
+    // أول تشغيل
+    sendHadith();
+
+    // كل 2 دقائق
+    setInterval(sendHadith, 2 * 60 * 1000);
+  }
 }
 
-module.exports = { startHadithSystem };
+module.exports = HadithSystem;
