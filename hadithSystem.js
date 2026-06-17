@@ -1,77 +1,81 @@
 const fs = require("fs");
 const { EmbedBuilder } = require("discord.js");
 
-// ================= CONFIG =================
-
 const CHANNEL_ID = "1516016586643734639";
 
 const ICON = "YOUR_ICON_URL";
 const AUTHOR = "مُـــذَكّــــــر | الأحاديث";
 const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
-// ================= LOAD HADITHS =================
-
 let hadiths = [];
 
+// ================= SAFE JSON LOAD =================
+
 try {
-  hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8")).hadiths || [];
+  const raw = fs.readFileSync("./hadiths.json", "utf8");
+  const parsed = JSON.parse(raw);
+
+  if (Array.isArray(parsed.hadiths)) {
+    hadiths = parsed.hadiths;
+  } else {
+    console.log("❌ hadiths.json format error");
+  }
+
 } catch (err) {
-  console.log("❌ JSON ERROR:", err);
-  hadiths = [];
+  console.log("❌ JSON LOAD ERROR:", err);
 }
 
-// ================= NO REPEAT SYSTEM =================
+// ================= STATE =================
 
 let used = new Set();
 
-// ================= GET RANDOM WITHOUT REPEAT =================
+// ================= GET HADITH (NO REPEAT) =================
 
 function getHadith() {
   if (!hadiths.length) return null;
 
-  // إعادة التصفير بعد انتهاء 100%
   if (used.size >= hadiths.length) {
-    used.clear();
+    used.clear(); // إعادة التدوير
   }
 
-  let index;
+  let i;
 
   do {
-    index = Math.floor(Math.random() * hadiths.length);
-  } while (used.has(index));
+    i = Math.floor(Math.random() * hadiths.length);
+  } while (used.has(i));
 
-  used.add(index);
+  used.add(i);
 
-  return hadiths[index];
+  return hadiths[i];
 }
 
 // ================= EMBED =================
 
 function buildEmbed(h) {
-  const text = h.text.replace("قال رسول الله ﷺ:", "").trim();
+  const text = (h.text || "").replace("قال رسول الله ﷺ:", "").trim();
 
   return new EmbedBuilder()
     .setColor("#E8C547")
     .setDescription(
 `🔸 ➤ قال رسول الله ﷺ: «${text}»
 
-👤 ➤ الراوي : ${h.narrator}
+👤 ➤ الراوي : ${h.narrator || "غير معروف"}
 
-📚 ➤ المصدر : ${h.source}`
+📚 ➤ المصدر : ${h.source || "غير معروف"}`
     )
     .setFooter({ text: FOOTER, iconURL: ICON })
     .setTimestamp();
 }
 
-// ================= SEND =================
+// ================= SEND SAFE =================
 
 async function sendHadith(client) {
   try {
-    const channel = await client.channels.fetch(CHANNEL_ID);
-    if (!channel) return;
+    const channel = await client.channels.fetch(CHANNEL_ID).catch(() => null);
+    if (!channel) return console.log("❌ CHANNEL NOT FOUND");
 
     const h = getHadith();
-    if (!h) return;
+    if (!h) return console.log("❌ NO HADITHS");
 
     await channel.send({ embeds: [buildEmbed(h)] });
 
@@ -84,11 +88,11 @@ async function sendHadith(client) {
 
 // ================= START SYSTEM =================
 
-function startHadithSystem(client) {
+async function startHadithSystem(client) {
   console.log("📿 Hadith System Started");
 
-  // إرسال فوري عند التشغيل
-  sendHadith(client);
+  // إرسال فوري
+  await sendHadith(client);
 
   // كل دقيقتين
   setInterval(() => {
