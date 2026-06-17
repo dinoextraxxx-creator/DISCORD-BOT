@@ -4,30 +4,21 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// تحميل الأنظمة بشكل آمن
-try {
-  require("./hadithSystem")(client);
-} catch (e) {
-  console.log("Hadith module failed:", e.message);
-}
+// تحميل الأنظمة
+require("./hadithSystem")(client);
+require("./prayerSystem")(client);
 
-try {
-  require("./prayerSystem")(client);
-} catch (e) {
-  console.log("Prayer module failed:", e.message);
-}
-
-client.once("ready", () => {
-  console.log(`✅ Logged in as ${client.user.tag}`);
-});
-
-// حماية نهائية ضد الكراش
+// حماية كاملة ضد الكراش
 process.on("uncaughtException", (err) => {
-  console.log("🔥 Uncaught Exception:", err.message);
+  console.log("🔥 Crash prevented:", err.message);
 });
 
 process.on("unhandledRejection", (err) => {
-  console.log("⚠️ Unhandled Rejection:", err);
+  console.log("⚠️ Rejection handled:", err);
+});
+
+client.once("ready", () => {
+  console.log(`✅ Bot ready: ${client.user.tag}`);
 });
 
 client.login(process.env.TOKEN);
