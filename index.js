@@ -7,47 +7,60 @@ intents: [GatewayIntentBits.Guilds]
 console.log("🔥 BOT STARTING...");
 
 async function safe(name, fn){
+
 try{
+
 console.log(`🟢 Loading ${name}...`);
+
 await fn(client);
+
 console.log(`✅ ${name} LOADED`);
+
 }catch(err){
+
 console.log(`❌ ${name} ERROR`);
 console.log(err);
-}
+
 }
 
-client.once("clientReady", async () => {
+}
+
+client.once("ready", async () => {
+
+console.log("READY EVENT FIRED");
 
 console.log("✅ BOT READY");
 
 await safe("PRAYER", require("./prayerSystem").startPrayerSystem);
 
+await safe("HADITH", require("./hadithSystem").startHadithSystem);
+
 console.log("🚀 SYSTEM ONLINE");
+
 });
 
-// 🟢 BUTTON HANDLER (FIXED)
+// BUTTONS
 
-client.on("interactionCreate", async (interaction) => {
+client.on("interactionCreate", async (i) => {
 
-if(!interaction.isButton()) return;
+if(!i.isButton()) return;
 
-if(interaction.customId.startsWith("prayer_")){
+if(i.customId.startsWith("prayer_")){
 
-const name = interaction.customId.replace("prayer_","");
+const name = i.customId.replace("prayer_","");
 
-return interaction.reply({
-content: `تفاصيل صلاة ${name}`,
-ephemeral: true
+return i.reply({
+content:`تفاصيل صلاة ${name}`,
+ephemeral:true
 });
 
 }
 
-if(interaction.customId === "azkar"){
+if(i.customId === "azkar"){
 
-return interaction.reply({
-content: "أذكار الأذان",
-ephemeral: true
+return i.reply({
+content:"أذكار الأذان",
+ephemeral:true
 });
 
 }
