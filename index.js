@@ -1,33 +1,77 @@
-const { Client, GatewayIntentBits } = require("discord.js");
+const fs = require("fs");
+const { EmbedBuilder } = require("discord.js");
 
-// ================= SYSTEMS =================
+const CHANNEL_ID = "1516016586643734639"; // قناة الأحاديث
+const ICON = "YOUR_ICON_URL";
+const AUTHOR = "مُـــذَكّــــــر | الأحاديث";
+const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
-const { startPrayerSystem } = require("./prayerSystem");
-const { startHadithSystem } = require("./hadithSystem");
+let hadiths = [];
 
-// ================= CLIENT =================
+try {
+  hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8")).hadiths || [];
+  console.log("📖 Hadiths loaded:", hadiths.length);
+} catch (err) {
+  console.log("❌ JSON ERROR:", err);
+}
 
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
-});
+function getRandom() {
+  if (!hadiths.length) return null;
+  return hadiths[Math.floor(Math.random() * hadiths.length)];
+}
 
-// ================= ERRORS =================
+function embed(h) {
+  return new EmbedBuilder()
+    .setColor("#E8C547")
+    .setDescription(
+`🔸 ➤ قال رسول الله ﷺ: «${h.text.replace("قال رسول الله ﷺ:", "").trim()}»
 
-process.on("unhandledRejection", console.log);
-process.on("uncaughtException", console.log);
+👤 ➤ الراوي : ${h.narrator}
 
-// ================= READY =================
+📚 ➤ المصدر : ${h.source}`
+    )
+    .setFooter({ text: FOOTER, iconURL: ICON })
+    .setTimestamp();
+}
 
-client.once("ready", () => {
-  console.log("BOT READY");
+async function send(client) {
+  try {
+    console.log("📡 Trying to send hadith...");
 
-  // تشغيل الصلاة
-  startPrayerSystem(client);
+    const channel = await client.channels.fetch(CHANNEL_ID).catch(err => {
+      console.log("❌ CHANNEL FETCH ERROR:", err);
+      return null;
+    });
 
-  // تشغيل الأحاديث
-  startHadithSystem(client);
-});
+    if (!channel) {
+      console.log("❌ Channel not found");
+      return;
+    }
 
-// ================= LOGIN =================
+    const h = getRandom();
 
-client.login(process.env.TOKEN);
+    if (!h) {
+      console.log("❌ No hadiths found");
+      return;
+    }
+
+    await channel.send({ embeds: [embed(h)] });
+
+    console.log("✅ HADITH SENT SUCCESS");
+
+  } catch (err) {
+    console.log("❌ SEND ERROR:", err);
+  }
+}
+
+function startHadithSystem(client) {
+  console.log("📿 Hadith system started");
+
+  send(client);
+
+  setInterval(() => {
+    send(client);
+  }, 2 * 60 * 1000);
+}
+
+module.exports = { startHadithSystem };
