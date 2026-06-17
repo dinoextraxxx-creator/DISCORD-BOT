@@ -12,9 +12,9 @@ const COLOR = "#FFD700";
 
 const AUTHOR = "مُـــذَكّــــــر";
 
-const FOOTER = "4KO • YONKO.مُـــذَكّــــــر";
+const FOOTER = "قد يختلف موعد الاذان من مدينة لأخرى";
 
-const header =
+const TITLE =
 "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾";
 
 const data =
@@ -53,10 +53,9 @@ name: AUTHOR,
 iconURL: ICON
 })
 
-.setTitle(header)
+.setTitle(TITLE)
 
 .setDescription(
-
 `🔸 ➤ قال رسول الله ﷺ:
 
 «${h.text}»
@@ -64,7 +63,6 @@ iconURL: ICON
 👤 ➤ الراوي : ${h.narrator}
 
 📚 ➤ المصدر : ${h.source}`
-
 )
 
 .setFooter({
