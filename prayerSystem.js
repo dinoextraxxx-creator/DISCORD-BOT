@@ -1,41 +1,47 @@
 const { EmbedBuilder } = require("discord.js");
-const fs = require("fs");
 
-const hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
+const prayers = [
+  { name: "الفجر", time: "05:00" },
+  { name: "الظهر", time: "12:30" },
+  { name: "العصر", time: "16:00" },
+  { name: "المغرب", time: "19:00" },
+  { name: "العشاء", time: "20:30" }
+];
 
-let lastIndex = -1;
+let sentToday = new Set();
 
-function getRandomHadith() {
-  let index;
-  do {
-    index = Math.floor(Math.random() * hadiths.length);
-  } while (index === lastIndex && hadiths.length > 1);
-
-  lastIndex = index;
-  return hadiths[index];
+function now() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-function buildEmbed(h) {
+function buildEmbed(prayer) {
   return new EmbedBuilder()
     .setColor("#FFD700")
-    .setTitle("📜 حديث نبوي شريف")
-    .setDescription(`🔸 ${h.text}`)
-    .addFields(
-      { name: "👤 الراوي", value: h.rawi || "غير مذكور", inline: false },
-      { name: "📚 المصدر", value: h.source || "غير مذكور", inline: false },
-      { name: "📖 البيان", value: h.bayan || "لا يوجد", inline: false }
-    )
-    .setFooter({ text: "4KO • YONKO" });
+    .setTitle(`🕌 موعد صلاة ${prayer.name}`)
+    .setDescription(`حان الآن وقت صلاة ${prayer.name}`)
+    .setFooter({ text: "موعد الأذان قد يختلف حسب المدينة" });
 }
 
-function startHadithSystem(client, channelId) {
+function startPrayerSystem(client) {
+  const channel = client.channels.cache.get("1516405973365952633");
+  if (!channel) return;
+
   setInterval(() => {
-    const channel = client.channels.cache.get(channelId);
-    if (!channel) return;
+    const current = now();
 
-    const hadith = getRandomHadith();
-    channel.send({ embeds: [buildEmbed(hadith)] });
-  }, 2 * 60 * 1000);
+    for (const p of prayers) {
+      if (p.time === current && !sentToday.has(p.name)) {
+        channel.send({ embeds: [buildEmbed(p)] });
+        sentToday.add(p.name);
+      }
+    }
+  }, 30000);
+
+  // reset يومي
+  setInterval(() => {
+    sentToday.clear();
+  }, 24 * 60 * 60 * 1000);
 }
 
-module.exports = { startHadithSystem };
+module.exports = { startPrayerSystem };
