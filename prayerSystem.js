@@ -6,33 +6,16 @@ function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-function buildEmbed(prayer) {
+function embed(p) {
   return {
     color: 0xFFD700,
-    author: {
-      name: "مُـــذَكّــــــر | مواعيد الصلاة"
-    },
+    author: { name: "مُـــذَكّــــــر | الصلاة" },
     fields: [
-      {
-        name: "🕌 الصلاة",
-        value: prayer.name || "غير متوفر"
-      },
-      {
-        name: "⏰ الوقت",
-        value: prayer.time || "غير متوفر"
-      },
-      {
-        name: "📖 الفضل",
-        value: prayer.fadl || "لا يوجد"
-      },
-      {
-        name: "📚 الحديث",
-        value: prayer.hadith || "لا يوجد"
-      }
-    ],
-    footer: {
-      text: "موعد الأذان قد يتغير من مدينة لأخرى"
-    }
+      { name: "🕌 الصلاة", value: p.name || "N/A" },
+      { name: "⏰ الوقت", value: p.time || "N/A" },
+      { name: "📖 الفضل", value: p.fadl || "N/A" },
+      { name: "📚 الحديث", value: p.hadith || "N/A" }
+    ]
   };
 }
 
@@ -42,29 +25,44 @@ async function start(client) {
   if (started) return;
   started = true;
 
-  console.log("Prayer system started...");
+  console.log("🚀 Prayer system starting...");
 
+  let channel;
   try {
-    const channel = await client.channels.fetch(channelId);
-    if (!channel) return;
+    channel = await client.channels.fetch(channelId);
+  } catch (e) {
+    console.error("❌ Channel fetch failed (PRAYER):", e);
+    return;
+  }
 
-    const keys = Object.keys(prayers);
+  if (!channel) {
+    console.error("❌ Prayer channel not found");
+    return;
+  }
 
-    for (const key of keys) {
-      const prayer = prayers[key];
+  console.log("✅ Prayer channel OK");
 
-      const embed = buildEmbed(prayer);
-      await channel.send({ embeds: [embed] });
+  const keys = Object.keys(prayers);
 
-      // فرق دقيقة بين كل صلاة
-      await sleep(60 * 1000);
+  if (keys.length === 0) {
+    console.error("❌ prayers.json is empty");
+    return;
+  }
+
+  for (let i = 0; i < keys.length; i++) {
+    const p = prayers[keys[i]];
+
+    try {
+      await channel.send({ embeds: [embed(p)] });
+      console.log(`📨 Prayer sent: ${keys[i]}`);
+    } catch (e) {
+      console.error("❌ Prayer send error:", e);
     }
 
-    console.log("Prayer cycle finished (no repeat).");
-
-  } catch (err) {
-    console.error("Prayer system error:", err);
+    await sleep(60 * 1000);
   }
+
+  console.log("✅ Prayer cycle finished");
 }
 
 module.exports = { start };
