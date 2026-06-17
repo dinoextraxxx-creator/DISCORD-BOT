@@ -1,46 +1,105 @@
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-const { EmbedBuilder } = require("discord.js");
-const prayers = require("./prayers");
+// ================= CONFIG =================
 
-const CHANNEL_ID = "1516016586643734639";
+const CHANNEL_ID = "1516405973365952633";
 
-function buildEmbed(prayer) {
+const ICON = "YOUR_ICON_URL";
+const AUTHOR = "مُـــذَكّــــــر | مواعيد الصلاة";
+const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
+
+// ================= PRAYERS TEST DATA =================
+
+const prayers = {
+  fajr: {
+    title: "الفجر",
+    verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
+    description: "صلاة الفجر هي مقياس براءة الإنسان من النفاق",
+    rakah: "• عدد ركعاتها: 2"
+  },
+  dhuhr: {
+    title: "الظهر",
+    verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
+    description: "صلاة الظهر هي أول صلاة فُرضت وصُلّيت",
+    rakah: "• عدد ركعاتها: 4"
+  },
+  asr: {
+    title: "العصر",
+    verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
+    description: "صلاة العصر هي الصلاة الوسطى",
+    rakah: "• عدد ركعاتها: 4"
+  },
+  maghrib: {
+    title: "المغرب",
+    verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
+    description: "صلاة المغرب هي وتر النهار",
+    rakah: "• عدد ركعاتها: 3"
+  },
+  isha: {
+    title: "العشاء",
+    verse: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
+    description: "صلاة العشاء هي أثقل صلاة على المنافقين",
+    rakah: "• عدد ركعاتها: 4"
+  }
+};
+
+// ================= EMBED =================
+
+function buildEmbed(p) {
   return new EmbedBuilder()
-    .setTitle(`حان موعد أذان صلاة ${prayer.title} حسب التوقيت المحلي لمدينة الرباط`)
-    .setDescription(`قال تعالى :\n\n***﴿ ${prayer.verse} ﴾***`)
     .setColor("#E8C547")
+    .setAuthor({ name: AUTHOR, iconURL: ICON })
+    .setTitle(`حان موعد أذان صلاة ${p.title}`)
+    .setDescription(
+`${p.verse}
+
+${p.description}
+
+${p.rakah}`
+    )
+    .setFooter({ text: FOOTER, iconURL: ICON })
     .setTimestamp();
 }
 
-function startPrayerSystem(client) {
-  const schedule = prayers;
+// ================= BUTTONS =================
 
-  function sendPrayer(prayer) {
-    client.channels.fetch(CHANNEL_ID)
-      .then(ch => {
-        if (!ch) return;
-        ch.send({ embeds: [buildEmbed(prayer)] });
-      })
-      .catch(console.log);
+function buildButtons(key) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`pray_${key}`)
+      .setLabel(`صلاة ${prayers[key].title}`)
+      .setStyle(ButtonStyle.Secondary),
+
+    new ButtonBuilder()
+      .setCustomId("azkar")
+      .setLabel("أذكار الأذان")
+      .setStyle(ButtonStyle.Secondary)
+  );
+}
+
+// ================= TEST SEND ALL =================
+
+async function startPrayerSystem(client) {
+  console.log("🟢 PRAYER TEST MODE STARTED");
+
+  const channel = await client.channels.fetch(CHANNEL_ID).catch(() => null);
+
+  if (!channel) {
+    console.log("❌ CHANNEL NOT FOUND");
+    return;
   }
 
-  function checkPrayerTime() {
-    const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
+  // إرسال كل الصلوات فور التشغيل (TEST ONLY)
+  for (const key of Object.keys(prayers)) {
+    await channel.send({
+      embeds: [buildEmbed(prayers[key])],
+      components: [buildButtons(key)]
+    });
 
-    for (let key in schedule) {
-      const p = schedule[key];
-
-      if (p.hour === hour && p.minute === minute) {
-        sendPrayer(p);
-      }
-    }
+    console.log("📤 SENT:", key);
   }
 
-  setInterval(checkPrayerTime, 60 * 1000);
-
-  console.log("PRAYER SYSTEM ACTIVE");
+  console.log("✅ ALL PRAYERS SENT (TEST COMPLETE)");
 }
 
 module.exports = { startPrayerSystem };
