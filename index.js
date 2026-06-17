@@ -6,24 +6,58 @@ const client = new Client({
 
 console.log("🔥 BOT STARTING...");
 
+// ================= SAFE LOADER =================
+
 async function safeLoad(name, fn) {
   try {
+
     console.log(`🟢 Loading ${name}...`);
+
     await fn(client);
+
     console.log(`✅ ${name} LOADED`);
+
   } catch (err) {
-    console.log(`❌ ${name} ERROR:`, err.message);
+
+    console.log(`❌ ${name} ERROR`);
+
+    console.log(err);
+
   }
 }
 
+// ================= READY =================
+
 client.once("ready", async () => {
+
   console.log("✅ BOT READY");
 
-  // تشغيل الأنظمة بشكل آمن
-  safeLoad("PRAYER", require("./prayerSystem").startPrayerSystem);
-  safeLoad("HADITH", require("./hadithSystem").startHadithSystem);
+  try {
+
+    await safeLoad(
+      "PRAYER",
+      require("./prayerSystem").startPrayerSystem
+    );
+
+  } catch (e) {
+    console.log("PRAYER LOAD FAILED");
+  }
+
+  try {
+
+    await safeLoad(
+      "HADITH",
+      require("./hadithSystem").startHadithSystem
+    );
+
+  } catch (e) {
+    console.log("HADITH LOAD FAILED");
+  }
 
   console.log("🚀 SYSTEM ONLINE");
+
 });
+
+// ================= LOGIN =================
 
 client.login(process.env.TOKEN);
