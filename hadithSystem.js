@@ -1,70 +1,41 @@
-const fs = require("fs");
 const { EmbedBuilder } = require("discord.js");
+const fs = require("fs");
 
-const CHANNEL = "1516016586643734639";
+const hadiths = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
 
-const ICON =
-"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg?ex=6a30b301&is=6a2f6181&hm=99212fa7d1a01c5bd6253cacfb49d1b849226abffe617b60c1c53121e1805f0f&";
+let lastIndex = -1;
 
-const AUTHOR = "مُـــذَكّــــــر | مواعـــيد الصــــلاة";
-const FOOTER = "4KO • YONKO.مُـــذَكّــــــر";
+function getRandomHadith() {
+  let index;
+  do {
+    index = Math.floor(Math.random() * hadiths.length);
+  } while (index === lastIndex && hadiths.length > 1);
 
-const TITLE =
-"﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾";
-
-const data = JSON.parse(fs.readFileSync("./hadiths.json","utf8"));
-const hadiths = data.hadiths;
-
-let used = new Set();
-
-function pick(){
-
-if(used.size >= hadiths.length){
-used.clear();
+  lastIndex = index;
+  return hadiths[index];
 }
 
-let i;
-do{
-i = Math.floor(Math.random() * hadiths.length);
-}while(used.has(i));
-
-used.add(i);
-return hadiths[i];
+function buildEmbed(h) {
+  return new EmbedBuilder()
+    .setColor("#FFD700")
+    .setTitle("📜 حديث نبوي شريف")
+    .setDescription(`🔸 ${h.text}`)
+    .addFields(
+      { name: "👤 الراوي", value: h.rawi || "غير مذكور" },
+      { name: "📚 المصدر", value: h.source || "غير مذكور" },
+      { name: "📖 البيان", value: h.bayan || "لا يوجد" }
+    )
+    .setFooter({ text: "4KO • YONKO" });
 }
 
-function embed(h){
+function startHadithSystem(client) {
+  const channel = client.channels.cache.get("1516016586643734639");
+  if (!channel) return;
 
-return new EmbedBuilder()
-.setColor("#FFD700")
-.setAuthor({
-name: AUTHOR,
-iconURL: ICON
-})
-.setTitle(TITLE)
-.setDescription(`«${h.text}»\n\n${h.narrator}\n\n${h.source}`)
-.setFooter({
-text: FOOTER,
-iconURL: ICON
-})
-.setTimestamp();
-
-}
-
-async function startHadithSystem(client){
-
-const ch = await client.channels.fetch(CHANNEL);
-
-async function send(){
-
-await ch.send({
-embeds:[embed(pick())]
-});
-
-setTimeout(send, 120000); // stable 2 min cycle
-
-}
-
-send();
+  setInterval(() => {
+    const hadith = getRandomHadith();
+    channel.send({ embeds: [buildEmbed(hadith)] });
+  }, 2 * 60 * 1000);
 }
 
 module.exports = { startHadithSystem };
