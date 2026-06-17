@@ -1,12 +1,9 @@
 {
-  "name": "prayer-bot",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "discord.js": "^14.15.3",
-    "axios": "^1.7.0"
-  }
+"name":"prayer-bot",
+"version":"1.0.0",
+"main":"index.js",
+"dependencies":{
+"discord.js":"^14.0.0",
+"axios":"^1.6.0"
+}
 }
