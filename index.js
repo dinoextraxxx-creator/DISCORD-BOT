@@ -1,20 +1,41 @@
-const { Client, GatewayIntentBits } = require("discord.js");
+const {
+Client,
+GatewayIntentBits,
+EmbedBuilder,
+ActionRowBuilder,
+ButtonBuilder,
+ButtonStyle
+} = require("discord.js");
 
+// ================= PRAYER SYSTEM =================
 const { startPrayerSystem } = require("./prayerSystem");
+
+// ================= HADITH SYSTEM =================
 const { startHadithSystem } = require("./hadithSystem");
 
+// ================= CLIENT =================
+
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+intents: [GatewayIntentBits.Guilds]
 });
+
+// ================= ERROR SAFETY =================
 
 process.on("unhandledRejection", console.log);
 process.on("uncaughtException", console.log);
 
-client.once("ready", async () => {
-  console.log("BOT READY");
+// ================= READY =================
 
-  startPrayerSystem(client);
-  startHadithSystem(client);
+client.once("ready", () => {
+console.log("BOT READY");
+
+// تشغيل نظام الصلاة
+startPrayerSystem(client);
+
+// تشغيل نظام الأحاديث
+startHadithSystem(client);
 });
+
+// ================= LOGIN =================
 
 client.login(process.env.TOKEN);
