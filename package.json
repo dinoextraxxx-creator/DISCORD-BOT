@@ -1,15 +1,21 @@
 {
   "name": "discord-prayer-hadith-bot",
   "version": "1.0.0",
-  "description": "Discord bot for prayers and hadith system",
+  "description": "Prayer and Hadith Discord Bot",
   "main": "index.js",
+
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
+
   "author": "",
   "license": "ISC",
+
   "dependencies": {
     "discord.js": "^14.15.3"
+  },
+
+  "engines": {
+    "node": ">=18"
   }
 }
