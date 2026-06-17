@@ -7,36 +7,11 @@ const AUTHOR = "مُـــذَكّــــــر | مواعيد الصلاة";
 const FOOTER = "مواعيد الصلاة قد تتغير من مدينة الى الاخرى";
 
 const prayers = [
-  {
-    name: "الفجر",
-    text: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    desc: "صلاة الفجر نور للمؤمن",
-    rakah: "• عدد الركعات: 2"
-  },
-  {
-    name: "الظهر",
-    text: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    desc: "أول صلاة مفروضة",
-    rakah: "• عدد الركعات: 4"
-  },
-  {
-    name: "العصر",
-    text: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    desc: "الصلاة الوسطى",
-    rakah: "• عدد الركعات: 4"
-  },
-  {
-    name: "المغرب",
-    text: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    desc: "وتر النهار",
-    rakah: "• عدد الركعات: 3"
-  },
-  {
-    name: "العشاء",
-    text: "﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾",
-    desc: "أثقل صلاة على المنافقين",
-    rakah: "• عدد الركعات: 4"
-  }
+  { name: "الفجر", time: "04:24" },
+  { name: "الظهر", time: "13:33" },
+  { name: "العصر", time: "17:14" },
+  { name: "المغرب", time: "20:45" },
+  { name: "العشاء", time: "22:18" }
 ];
 
 function buildEmbed(p) {
@@ -45,21 +20,21 @@ function buildEmbed(p) {
     .setAuthor({ name: AUTHOR, iconURL: ICON })
     .setTitle(`حان موعد أذان صلاة ${p.name}`)
     .setDescription(
-`${p.text}
+`﴿ وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ﴾
 
-${p.desc}
+🕰 الوقت الأصلي: ${p.time}
 
-${p.rakah}`
+🕌 الصلاة: ${p.name}`
     )
     .setFooter({ text: FOOTER, iconURL: ICON })
     .setTimestamp();
 }
 
-function buttons(key) {
+function buttons(p) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`pray_${key}`)
-      .setLabel(`صلاة ${prayers[key].name}`)
+      .setCustomId(`pray_${p.name}`)
+      .setLabel(`صلاة ${p.name}`)
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
@@ -70,34 +45,34 @@ function buttons(key) {
 }
 
 async function startPrayerSystem(client) {
-  const channel = await client.channels.fetch(CHANNEL_ID);
+  const channel = await client.channels.fetch(CHANNEL_ID).catch(() => null);
 
-  if (!channel) return console.log("❌ Prayer channel missing");
+  if (!channel) {
+    console.log("❌ Prayer channel not found");
+    return;
+  }
 
   let i = 0;
 
-  // أول صلاة فور التشغيل
-  await send(i);
+  // أول صلاة عند التشغيل
+  await channel.send({
+    embeds: [buildEmbed(prayers[i])],
+    components: [buttons(prayers[i])]
+  });
 
-  async function send(index) {
-    const p = prayers[index];
+  console.log("🕌 FIRST PRAYER SENT");
 
-    await channel.send({
-      embeds: [buildEmbed(p)],
-      components: [buttons(index)]
-    });
-
-    console.log("🟢 PRAYER SENT:", p.name);
-  }
-
-  // كل دقيقة صلاة التالية
+  // كل دقيقة صلاة جديدة
   setInterval(async () => {
     i++;
-
     if (i >= prayers.length) i = 0;
 
-    await send(i);
+    await channel.send({
+      embeds: [buildEmbed(prayers[i])],
+      components: [buttons(prayers[i])]
+    });
 
+    console.log("🕌 PRAYER SENT:", prayers[i].name);
   }, 60 * 1000);
 }
 
