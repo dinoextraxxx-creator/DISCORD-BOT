@@ -1,75 +1,49 @@
-const prayers = require("./prayers.json");
+const fs = require("fs");
 
-let started = false;
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-function safePrayers() {
-  try {
-    return Object.values(prayers || {});
-  } catch (e) {
-    console.log("❌ Invalid prayers.json", e);
-    return [];
-  }
-}
-
-function embed(p) {
-  return {
-    color: 0xFFD700,
-    title: "مُـــذَكّــــــر | صلاة",
-    fields: [
-      { name: "🕌 الصلاة", value: p?.name || "N/A" },
-      { name: "⏰ الوقت", value: p?.time || "N/A" },
-      { name: "📖 الفضل", value: p?.fadl || "N/A" },
-      { name: "📚 الحديث", value: p?.hadith || "N/A" }
-    ]
-  };
-}
-
-async function start(client) {
+module.exports = (client) => {
   const channelId = "1516405973365952633";
 
-  if (started) return;
-  started = true;
+  let started = false;
 
-  console.log("🚀 Prayer system booting...");
+  client.once("ready", () => {
+    if (started) return;
+    started = true;
 
-  let channel;
-  try {
-    channel = await client.channels.fetch(channelId);
-  } catch (e) {
-    console.log("❌ Cannot fetch prayer channel:", e);
-    return;
-  }
+    console.log("🕌 Prayer system started");
 
-  if (!channel) {
-    console.log("❌ Prayer channel not found");
-    return;
-  }
-
-  console.log("✅ Prayer channel ready");
-
-  const list = safePrayers();
-
-  if (list.length === 0) {
-    console.log("❌ prayers.json empty");
-    return;
-  }
-
-  for (let i = 0; i < list.length; i++) {
     try {
-      await channel.send({ embeds: [embed(list[i])] });
-      console.log("📨 Prayer sent");
-    } catch (e) {
-      console.log("❌ Prayer send error:", e);
+      const channel = client.channels.cache.get(channelId);
+      if (!channel) return;
+
+      const prayers = [
+        { name: "الفجر", delay: 0 },
+        { name: "الظهر", delay: 60000 },
+        { name: "العصر", delay: 120000 },
+        { name: "المغرب", delay: 180000 },
+        { name: "العشاء", delay: 240000 }
+      ];
+
+      prayers.forEach((p) => {
+        setTimeout(() => {
+          try {
+            channel.send({
+              embeds: [
+                {
+                  color: 0xFFD700,
+                  title: `🕌 صلاة ${p.name}`,
+                  description: `حان الآن موعد صلاة ${p.name}`,
+                  footer: { text: "موعد الأذان قد يتغير من مدينة لأخرى" }
+                }
+              ]
+            });
+          } catch (e) {
+            console.log("Prayer send error:", e.message);
+          }
+        }, p.delay);
+      });
+
+    } catch (err) {
+      console.log("Prayer system crash safe:", err.message);
     }
-
-    await sleep(60 * 1000);
-  }
-
-  console.log("✅ Prayer cycle finished");
-}
-
-module.exports = { start };
+  });
+};
