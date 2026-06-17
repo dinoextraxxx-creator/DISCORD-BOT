@@ -1,49 +1,37 @@
-const fs = require("fs");
-
 module.exports = (client) => {
   const channelId = "1516405973365952633";
 
-  let started = false;
+  client.once("ready", async () => {
+    console.log("🕌 Prayer system ACTIVE");
 
-  client.once("ready", () => {
-    if (started) return;
-    started = true;
+    const channel = client.channels.cache.get(channelId);
+    if (!channel) return;
 
-    console.log("🕌 Prayer system started");
+    const prayers = [
+      { name: "الفجر", text: "حان الآن موعد صلاة الفجر 🕌" },
+      { name: "الظهر", text: "حان الآن موعد صلاة الظهر 🕌" },
+      { name: "العصر", text: "حان الآن موعد صلاة العصر 🕌" },
+      { name: "المغرب", text: "حان الآن موعد صلاة المغرب 🕌" },
+      { name: "العشاء", text: "حان الآن موعد صلاة العشاء 🕌" }
+    ];
 
-    try {
-      const channel = client.channels.cache.get(channelId);
-      if (!channel) return;
-
-      const prayers = [
-        { name: "الفجر", delay: 0 },
-        { name: "الظهر", delay: 60000 },
-        { name: "العصر", delay: 120000 },
-        { name: "المغرب", delay: 180000 },
-        { name: "العشاء", delay: 240000 }
-      ];
-
-      prayers.forEach((p) => {
-        setTimeout(() => {
-          try {
-            channel.send({
-              embeds: [
-                {
-                  color: 0xFFD700,
-                  title: `🕌 صلاة ${p.name}`,
-                  description: `حان الآن موعد صلاة ${p.name}`,
-                  footer: { text: "موعد الأذان قد يتغير من مدينة لأخرى" }
-                }
-              ]
-            });
-          } catch (e) {
-            console.log("Prayer send error:", e.message);
-          }
-        }, p.delay);
-      });
-
-    } catch (err) {
-      console.log("Prayer system crash safe:", err.message);
+    for (let i = 0; i < prayers.length; i++) {
+      setTimeout(() => {
+        channel.send({
+          embeds: [
+            {
+              color: 0xFFD700,
+              author: {
+                name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة"
+              },
+              description: `🔸 ${prayers[i].text}`,
+              footer: {
+                text: "موعد الأذان قد يتغير من مدينة لأخرى • 4KO • YONKO.مُـــذَكّــــــر"
+              }
+            }
+          ]
+        }).catch(() => {});
+      }, i * 60000); // ⬅️ دقيقة بين كل صلاة
     }
   });
 };
