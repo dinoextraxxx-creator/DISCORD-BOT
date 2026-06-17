@@ -1,43 +1,68 @@
-const { EmbedBuilder } = require("discord.js");
+const hadiths = require("./hadiths.json");
 
-class HadithSystem {
-  constructor(client, channelId, hadiths) {
-    this.client = client;
-    this.channelId = channelId;
-    this.hadiths = hadiths;
-  }
+let interval = null;
 
-  start() {
-    const sendHadith = async () => {
-      try {
-        const channel = await this.client.channels.fetch(this.channelId);
-        if (!channel) return;
-
-        const random =
-          this.hadiths[Math.floor(Math.random() * this.hadiths.length)];
-
-        const embed = new EmbedBuilder()
-          .setColor("#FFD700")
-          .setDescription(`🔸 قال رسول الله ﷺ:\n\n«${random.text}»`)
-          .addFields(
-            { name: "👤 الراوي", value: random.rawi || "غير مذكور", inline: false },
-            { name: "📚 المصدر", value: random.source || "غير مذكور", inline: false },
-            { name: "📖 بيان", value: random.bayan || "لا يوجد", inline: false }
-          )
-          .setFooter({ text: "4KO • YONKO.Mُـــذَكّــــــر" });
-
-        await channel.send({ embeds: [embed] });
-      } catch (err) {
-        console.error("Hadith error:", err);
-      }
-    };
-
-    // تشغيل فوري
-    sendHadith();
-
-    // كل دقيقتين
-    setInterval(sendHadith, 2 * 60 * 1000);
-  }
+// مهم جداً: تحويل Object → Array
+function getHadithList() {
+  return Object.values(hadiths);
 }
 
-module.exports = HadithSystem;
+function getRandomHadith() {
+  const list = getHadithList();
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function buildEmbed(hadith) {
+  return {
+    color: 0xFFD700,
+    author: {
+      name: "مُـــذَكّــــــر | الأحاديث النبوية"
+    },
+    fields: [
+      {
+        name: "🔸 الحديث",
+        value: hadith.text || "غير متوفر"
+      },
+      {
+        name: "👤 الراوي",
+        value: hadith.rawi || "غير متوفر"
+      },
+      {
+        name: "📚 المصدر",
+        value: hadith.source || "غير متوفر"
+      },
+      {
+        name: "📖 البيان",
+        value: hadith.bayan || "لا يوجد"
+      }
+    ],
+    footer: {
+      text: "4KO • YONKO.مُـــذَكّــــــر"
+    }
+  };
+}
+
+function start(client) {
+  const channelId = "1516016586643734639";
+
+  if (interval) return;
+
+  console.log("Hadith system started...");
+
+  interval = setInterval(async () => {
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (!channel) return;
+
+      const hadith = getRandomHadith();
+      const embed = buildEmbed(hadith);
+
+      await channel.send({ embeds: [embed] });
+
+    } catch (err) {
+      console.error("Hadith error:", err);
+    }
+  }, 2 * 60 * 1000); // كل دقيقتين
+}
+
+module.exports = { start };
