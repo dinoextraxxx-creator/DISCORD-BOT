@@ -1,33 +1,78 @@
-const { Client, GatewayIntentBits } = require("discord.js");
-
-const { startPrayerSystem } = require("./prayerSystem");
-const { startHadithSystem } = require("./hadithSystem");
+const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// ================= SAFETY =================
+const PRAYER_CHANNEL = "1516405973365952633";
+const HADITH_CHANNEL = "1516016586643734639";
 
-process.on("unhandledRejection", console.log);
-process.on("uncaughtException", console.log);
+console.log("🔥 BOT LOADING");
 
-// ================= READY =================
+const prayers = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"];
+
+let hadiths = [
+  {
+    text: "إنما الأعمال بالنيات",
+    narrator: "عمر بن الخطاب",
+    source: "البخاري"
+  },
+  {
+    text: "من صلى علي صلاة صلى الله عليه بها عشرا",
+    narrator: "أبو هريرة",
+    source: "مسلم"
+  }
+];
+
+function sendPrayerTest(channel) {
+  prayers.forEach(p => {
+    const embed = new EmbedBuilder()
+      .setColor("#E8C547")
+      .setTitle(`حان موعد أذان صلاة ${p}`)
+      .setDescription("🟢 اختبار النظام")
+      .setTimestamp();
+
+    channel.send({ embeds: [embed] });
+  });
+}
+
+function sendHadith(channel) {
+  const h = hadiths[Math.floor(Math.random() * hadiths.length)];
+
+  const embed = new EmbedBuilder()
+    .setColor("#E8C547")
+    .setDescription(
+`🔸 ➤ قال رسول الله ﷺ: «${h.text}»
+
+👤 ➤ الراوي : ${h.narrator}
+
+📚 ➤ المصدر : ${h.source}`
+    )
+    .setTimestamp();
+
+  channel.send({ embeds: [embed] });
+}
 
 client.once("ready", async () => {
-  console.log("🔥 BOT READY");
+  console.log("✅ BOT READY");
 
-  try {
-    await startPrayerSystem(client);
-    await startHadithSystem(client);
+  const prayerChannel = await client.channels.fetch(PRAYER_CHANNEL);
+  const hadithChannel = await client.channels.fetch(HADITH_CHANNEL);
 
-    console.log("✅ ALL SYSTEMS RUNNING");
-
-  } catch (err) {
-    console.log("❌ SYSTEM ERROR:", err);
+  if (!prayerChannel || !hadithChannel) {
+    return console.log("❌ CHANNEL ERROR");
   }
-});
 
-// ================= LOGIN =================
+  // إرسال فوري للتأكد
+  sendPrayerTest(prayerChannel);
+  sendHadith(hadithChannel);
+
+  // hadith كل دقيقتين
+  setInterval(() => {
+    sendHadith(hadithChannel);
+  }, 2 * 60 * 1000);
+
+  console.log("🟢 SYSTEM RUNNING");
+});
 
 client.login(process.env.TOKEN);
