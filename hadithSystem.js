@@ -1,25 +1,23 @@
 const fs = require("fs");
 
 module.exports = (client) => {
-  let hadithIntervalStarted = false;
+  const channelId = "1516016586643734633";
 
   client.once("ready", () => {
-    if (hadithIntervalStarted) return;
-    hadithIntervalStarted = true;
-
-    console.log("📚 Hadith system started");
+    console.log("📚 Hadith system ACTIVE");
 
     setInterval(() => {
       try {
-        const data = JSON.parse(fs.readFileSync("./hadiths.json", "utf8"));
+        const raw = fs.readFileSync("./hadiths.json", "utf8");
+        const data = JSON.parse(raw);
 
         const keys = Object.keys(data);
         if (!keys.length) return;
 
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        const h = data[randomKey];
+        const key = keys[Math.floor(Math.random() * keys.length)];
+        const h = data[key];
 
-        const channel = client.channels.cache.get("1516016586643734633");
+        const channel = client.channels.cache.get(channelId);
         if (!channel) return;
 
         channel.send({
@@ -28,18 +26,20 @@ module.exports = (client) => {
               color: 0xFFD700,
               description: h.text,
               fields: [
-                { name: "👤 الراوي", value: h.rawi || "—" },
-                { name: "📚 المصدر", value: h.source || "—" },
-                { name: "📖 بيان", value: h.bayan || "—" }
+                { name: "👤 الراوي", value: h.rawi || "—", inline: false },
+                { name: "📚 المصدر", value: h.source || "—", inline: false },
+                { name: "📖 بيان", value: h.bayan || "—", inline: false }
               ],
-              footer: { text: "4KO • YONKO.مُـــذَكّــــــر" }
+              footer: {
+                text: "4KO • YONKO.مُـــذَكّــــــر"
+              }
             }
           ]
-        });
+        }).catch(() => {});
 
       } catch (err) {
-        console.log("❌ Hadith error:", err.message);
+        console.log("Hadith safe error:", err.message);
       }
-    }, 2 * 60 * 1000); // كل دقيقتين
+    }, 120000); // كل دقيقتين
   });
 };
