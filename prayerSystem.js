@@ -1,61 +1,81 @@
-const fs = require("fs");
+const prayers = require("./prayers");
 
-const PRAYER_CHANNEL = "1516405973365952633";
-const sent = new Set();
-let prayers = [];
+// القناة (عدّلها إذا تحتاج)
+const CHANNEL_ID = "1516405973365952633";
 
-function loadPrayers() {
-  prayers = JSON.parse(fs.readFileSync("./prayers.json", "utf8"));
+// لمنع التكرار
+let sent = new Set();
+
+function wait(ms) {
+  return new Promise(res => setTimeout(res, ms));
 }
 
-function getTime() {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+function buildEmbed(prayerName) {
+  return {
+    color: 0xFFFF00,
+    author: {
+      name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
+      iconURL: "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg"
+    },
+    title: `حان موعد أذان ${prayerName} حسب التوقيت المحلي لمدينة الدار البيضاء`,
+    description: "﴿وَقُرْآنَ الْفَجْرِ ۖ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا﴾\n\nقرآن الفجر : صلاة الفجر",
+    footer: {
+      text: "قد يختلف موعد الأذان من مدينة لأخرى"
+    },
+    timestamp: new Date()
+  };
+}
+
+function buildButtons(prayerName) {
+  return {
+    type: 1,
+    components: [
+      {
+        type: 2,
+        style: 2,
+        label: `صلاة ${prayerName}`,
+        custom_id: `pray_${prayerName}`
+      },
+      {
+        type: 2,
+        style: 2,
+        label: "اذكار الصلاة",
+        custom_id: `azkar_${prayerName}`
+      }
+    ]
+  };
 }
 
 async function sendPrayer(client, prayer) {
-  try {
-    const channel = await client.channels.fetch(PRAYER_CHANNEL).catch(() => null);
-    if (!channel) return console.log("❌ Prayer channel not found");
+  if (sent.has(prayer.name)) return;
+  sent.add(prayer.name);
 
-    const embed = {
-      color: 0xFFD700,
-      title: `🕌 ${prayer.name}`,
-      description: prayer.text,
-      author: {
-        name: "مُـــذَكّــــــر | مواعـــيد الصــــلاة",
-      },
-    };
+  const channel = await client.channels.fetch(CHANNEL_ID);
 
-    await channel.send({ embeds: [embed] });
-    console.log(`🕌 Sent: ${prayer.name}`);
-  } catch (err) {
-    console.log("❌ Prayer error:", err);
-  }
+  await channel.send({
+    embeds: [buildEmbed(prayer.name)],
+    components: [buildButtons(prayer.name)]
+  });
 }
 
-function checkPrayers(client) {
-  const now = getTime();
+module.exports = async function startPrayerSystem(client) {
+  console.log("Prayer system started");
 
-  for (const p of prayers) {
-    if (p.time === now && !sent.has(p.name)) {
-      sendPrayer(client, p);
-      sent.add(p.name);
+  let index = 0;
+
+  // 🔥 يبدأ مباشرة عند تشغيل البوت
+  while (index < prayers.length) {
+    const prayer = prayers[index];
+
+    await sendPrayer(client, prayer);
+
+    index++;
+
+    // ⏱️ فرق دقيقة بين كل صلاة (60 ثانية)
+    if (index < prayers.length) {
+      await wait(60000);
     }
   }
-}
 
-function start(client) {
-  loadPrayers();
-  console.log("🕌 Prayer system started");
-
-  // فحص أول مرة عند بدء التشغيل
-  checkPrayers(client);
-
-  // فحص كل دقيقة
-  setInterval(() => {
-    checkPrayers(client);
-  }, 60 * 1000);
-}
-
-module.exports = { start };
+  console.log("All prayers sent once (test mode complete)");
+};
