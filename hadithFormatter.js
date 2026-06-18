@@ -1,22 +1,18 @@
 const { EmbedBuilder } = require("discord.js");
 
-/**
- * 📖 Hadith Embed Formatter (FINAL v99)
- */
+module.exports = function(h,color,icon){
 
-module.exports = function(h, color, icon){
+let text=`🔸 قال رسول الله ﷺ: «${h.text}»`;
 
-let text = `🔸 قال رسول الله ﷺ: «${h.text}»`;
-
-text += `\n\n👤 الراوي : ${h.rawi}`;
-text += `\n📚 المصدر : ${h.source}`;
+text+=`\n\n👤 الراوي : ${h.rawi}`;
+text+=`\n📚 المصدر : ${h.source}`;
 
 if(h.bayan){
-text += `\n📖 بيان : ${h.bayan}`;
+text+=`\n📖 بيان : ${h.bayan}`;
 }
 
 return new EmbedBuilder()
-.setColor(color || "#FF0000")
+.setColor(color||"#FF0000")
 .setAuthor({
 name:"مُـــذَكّــــــر",
 iconURL:icon
