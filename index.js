@@ -14,7 +14,7 @@ intents:[GatewayIntentBits.Guilds]
 });
 
 const ICON=
-"https://cdn.discordapp.com/attachments/1515161056975126705/1516909922040811610/-_4.jpg";
+"https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
 const AZKAR=`
 1- يقول مثل ما يقول المؤذن إلا في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
@@ -31,20 +31,13 @@ const AZKAR=`
 client.once(Events.ClientReady,async()=>{
 console.log("BOT READY");
 
-// الصلاة
+try{await startPrayerSystem(client);}catch(e){console.log(e);}
 try{
-await startPrayerSystem(client);
-}catch(e){
-console.log("Prayer system error:",e);
-}
-
-// الأحاديث
-try{
-await startHadithSystem(client);
-}catch(e){
-console.log("Hadith system error:",e);
-}
-
+await startHadithSystem(client,{
+icon:ICON,
+color:"#FFA500"
+});
+}catch(e){console.log(e);}
 });
 
 client.on(Events.InteractionCreate,async(i)=>{
@@ -53,9 +46,7 @@ if(!i.isButton())return;
 
 try{
 
-// زر الصلاة
 if(i.customId.startsWith("pray_")){
-
 const prayer=i.customId.replace("pray_","");
 
 return i.reply({
@@ -63,38 +54,24 @@ ephemeral:true,
 embeds:[
 new EmbedBuilder()
 .setColor("#00FF66")
-.setAuthor({
-name:"مُـــذَكّــــــر",
-iconURL:ICON
-})
-.setDescription(PRAYER_DETAILS?.[prayer] || "لا توجد بيانات")
-.setFooter({
-text:"4KO • YONKO.مُـــذَكّــــــر",
-iconURL:ICON
-})
+.setAuthor({name:"مُـــذَكّــــــر",iconURL:ICON})
+.setDescription(PRAYER_DETAILS?.[prayer]||"لا توجد بيانات")
+.setFooter({text:"4KO • YONKO.مُـــذَكّــــــر",iconURL:ICON})
 .setTimestamp()
 ]
 });
 }
 
-// زر الأذكار
 if(i.customId==="azkar"){
-
 return i.reply({
 ephemeral:true,
 embeds:[
 new EmbedBuilder()
 .setColor("#00FF66")
-.setAuthor({
-name:"مُـــذَكّــــــر",
-iconURL:ICON
-})
+.setAuthor({name:"مُـــذَكّــــــر",iconURL:ICON})
 .setTitle("اذكـــــــار الصــــلاة")
 .setDescription(AZKAR)
-.setFooter({
-text:"4KO • YONKO.مُـــذَكّــــــر",
-iconURL:ICON
-})
+.setFooter({text:"4KO • YONKO.مُـــذَكّــــــر",iconURL:ICON})
 .setTimestamp()
 ]
 });
