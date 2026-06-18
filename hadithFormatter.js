@@ -1,18 +1,22 @@
-const { EmbedBuilder }=require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
-module.exports=function(h,color,icon){
+/**
+ * 📖 Hadith Embed Formatter (FINAL v99)
+ */
 
-let text=`🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
+module.exports = function(h, color, icon){
 
-text+=`\n\n👤 ➤ الراوي: ${h.rawi}`;
-text+=`\n\n📚 ➤ المصدر: ${h.source}`;
+let text = `🔸 قال رسول الله ﷺ: «${h.text}»`;
+
+text += `\n\n👤 الراوي : ${h.rawi}`;
+text += `\n📚 المصدر : ${h.source}`;
 
 if(h.bayan){
-text+=`\n\n📖 ➤ بيان: ${h.bayan}`;
+text += `\n📖 بيان : ${h.bayan}`;
 }
 
 return new EmbedBuilder()
-.setColor(color || "#FFA500")
+.setColor(color || "#FF0000")
 .setAuthor({
 name:"مُـــذَكّــــــر",
 iconURL:icon
@@ -23,4 +27,5 @@ text:"4KO • YONKO.مُـــذَكّــــــر",
 iconURL:icon
 })
 .setTimestamp();
+
 };
