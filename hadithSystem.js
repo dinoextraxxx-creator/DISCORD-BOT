@@ -9,34 +9,32 @@ const part8=require("./hadiths_part8");
 const part9=require("./hadiths_part9");
 const part10=require("./hadiths_part10");
 
-const { EmbedBuilder }=require("discord.js");
+const formatHadith=require("./hadithFormatter");
 
-let lastHadith=null;
+let last=null;
 
 const ALL=[
 ...part1,...part2,...part3,...part4,...part5,
 ...part6,...part7,...part8,...part9,...part10
 ];
 
+const TIMES=["07:15","12:00","18:15","21:30"];
+
 function randomHadith(){
 let h;
 do{
 h=ALL[Math.floor(Math.random()*ALL.length)];
-}while(lastHadith && h.text===lastHadith.text);
+}while(last && h.text===last.text);
 
-lastHadith=h;
+last=h;
 return h;
 }
 
-// ⏰ أوقات الإرسال
-const TIMES=[
-"07:15",
-"12:00",
-"18:15",
-"21:30"
-];
+function startHadithSystem(client,options){
 
-function startHadithSystem(client,{channelId,icon,color="#FF0000"}){
+const channelId=options.channelId;
+const icon=options.icon;
+const color=options.color || "#FF0000";
 
 setInterval(()=>{
 
@@ -48,30 +46,13 @@ if(!TIMES.includes(hhmm))return;
 const channel=client.channels.cache.get(channelId);
 if(!channel)return;
 
-const h=randomHadith();
+const hadith=randomHadith();
 
-const embed=new EmbedBuilder()
-.setColor(color)
-.setAuthor({
-name:"مُـــذَكّــــــر",
-iconURL:icon
-})
-.setTitle("حديث نبوي شريف")
-.setDescription(`🔸 قال رسول الله ﷺ:
-«${h.text}»
-
-👤 الراوي : ${h.rawi}
-📚 المصدر : ${h.source}
-📖 بيان : ${h.bayan || "—"}`)
-.setFooter({
-text:"4KO • YONKO.مُـــذَكّــــــر",
-iconURL:icon
-})
-.setTimestamp();
+const embed=formatHadith(hadith,color,icon);
 
 channel.send({embeds:[embed]});
 
-},60000); // كل دقيقة
+},60000);
 
 }
 
