@@ -1,26 +1,20 @@
 const { EmbedBuilder }=require("discord.js");
 
-module.exports=function(h){
+module.exports=function(h,color="#FFA500",icon){
 
-let desc=`🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
+let text=`🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
 
-desc+=`\n\n👤 ➤ الراوي: ${h.rawi}`;
-
-desc+=`\n\n📚 ➤ المصدر: ${h.source}`;
+text+=`\n\n👤 ➤ الراوي: ${h.rawi}`;
+text+=`\n\n📚 ➤ المصدر: ${h.source}`;
 
 if(h.bayan){
-desc+=`\n\n📖 ➤ بيان: ${h.bayan}`;
+text+=`\n\n📖 ➤ بيان: ${h.bayan}`;
 }
 
 return new EmbedBuilder()
-.setColor("#FFD700")
-.setAuthor({
-name:"مُـــذَكّــــــر"
-})
-.setDescription(desc)
-.setFooter({
-text:"4KO • YONKO.مُـــذَكّــــــر"
-})
+.setColor(color)
+.setAuthor({name:"مُـــذَكّــــــر",iconURL:icon})
+.setDescription(text)
+.setFooter({text:"4KO • YONKO.مُـــذَكّــــــر",iconURL:icon})
 .setTimestamp();
-
 };
