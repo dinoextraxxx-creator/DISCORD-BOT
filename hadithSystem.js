@@ -9,26 +9,25 @@ const SCHEDULE=[
 {h:21,m:30}
 ];
 
-const part1=require("./hadiths_part1");
-const part2=require("./hadiths_part2");
-const part3=require("./hadiths_part3");
-const part4=require("./hadiths_part4");
-const part5=require("./hadiths_part5");
-const part6=require("./hadiths_part6");
-const part7=require("./hadiths_part7");
-const part8=require("./hadiths_part8");
-const part9=require("./hadiths_part9");
-const part10=require("./hadiths_part10");
-
-const hadiths=[
-...part1,...part2,...part3,...part4,...part5,
-...part6,...part7,...part8,...part9,...part10
+const parts=[
+require("./hadiths_part1"),
+require("./hadiths_part2"),
+require("./hadiths_part3"),
+require("./hadiths_part4"),
+require("./hadiths_part5"),
+require("./hadiths_part6"),
+require("./hadiths_part7"),
+require("./hadiths_part8"),
+require("./hadiths_part9"),
+require("./hadiths_part10")
 ];
+
+const hadiths=parts.flat();
 
 module.exports=(client,options={})=>{
 
 const icon=options.icon;
-const color=options.color||"#FFA500";
+const color=options.color;
 
 let last=-1;
 let sent=new Set();
@@ -42,13 +41,19 @@ last=i;
 return hadiths[i];
 }
 
-async function send(){
-const ch=await client.channels.fetch(CHANNEL_ID);
-if(!ch)return;
-await ch.send({embeds:[formatter(randomHadith(),color,icon)]});
+async function sendHadith(){
+const channel=await client.channels.fetch(CHANNEL_ID);
+if(!channel)return;
+
+await channel.send({
+embeds:[formatter(randomHadith(),color,icon)]
+});
 }
 
-function tick(){
+// 🧠 مهم: لا يعمل قبل جاهزية البوت
+function check(){
+
+if(!client.isReady()) return;
 
 const now=new Date();
 const time=new Date(now.toLocaleString("en-US",{timeZone:"Africa/Casablanca"}));
@@ -58,22 +63,18 @@ const m=time.getMinutes();
 
 const key=`${h}:${m}`;
 
-if(sent.has(key))return;
+if(sent.has(key)) return;
 
 for(const s of SCHEDULE){
 if(s.h===h && s.m===m){
-send();
+sendHadith();
 sent.add(key);
 }
 }
 }
 
-function reset(){
-sent.clear();
-}
+setInterval(check,60000);
+setInterval(()=>sent.clear(),86400000);
 
-setInterval(tick,60000);
-setInterval(reset,86400000);
-
-console.log("Hadith system running...");
+console.log("Hadith system locked & running");
 };
