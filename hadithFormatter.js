@@ -1,33 +1,26 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder }=require("discord.js");
 
-module.exports = function formatHadith(h) {
+module.exports=function(h){
 
-let body = "";
+let desc=`🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
 
-body += `🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
+desc+=`\n\n👤 ➤ الراوي: ${h.rawi}`;
 
-body += `\n\n👤 ➤ الراوي: ${h.rawi}`;
+desc+=`\n\n📚 ➤ المصدر: ${h.source}`;
 
-body += `\n\n📚 ➤ المصدر: ${h.source}`;
-
-if (h.bayan) {
-body += `\n\n📖 ➤ بيان: ${h.bayan}`;
+if(h.bayan){
+desc+=`\n\n📖 ➤ بيان: ${h.bayan}`;
 }
 
 return new EmbedBuilder()
-
 .setColor("#FFD700")
-
 .setAuthor({
 name:"مُـــذَكّــــــر"
 })
-
-.setDescription(body)
-
+.setDescription(desc)
 .setFooter({
-text:"4KO • YONKO. مُـــذَكّــــــر"
+text:"4KO • YONKO.مُـــذَكّــــــر"
 })
-
 .setTimestamp();
 
 };
