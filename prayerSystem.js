@@ -1,19 +1,36 @@
 const axios=require("axios");
-const { EmbedBuilder }=require("discord.js");
 
-const API="https://api.aladhan.com/v1/timingsByCity?city=Casablanca&country=Morocco&method=21";
+const {
+EmbedBuilder,
+ActionRowBuilder,
+ButtonBuilder,
+ButtonStyle
+}=require("discord.js");
 
-let last=null;
-let todayReset="";
+const API=
+"https://api.aladhan.com/v1/timingsByCity?city=Casablanca&country=Morocco&method=18";
 
-function parse(t){
-const [h,m]=t.split(":");
-const d=new Date();
-d.setHours(+h);
-d.setMinutes(+m);
-d.setSeconds(0);
-return d;
+const CHANNEL=
+"1516405973365952633";
+
+const ICON=
+"https://cdn.discordapp.com/attachments/1515161056975126705/1516909922040811610/-_4.jpg";
+
+let sent={};
+
+function hhmm(t){
+return t.split(" ")[0]
+.replace(/\(.*/,"")
+.slice(0,5);
 }
+
+const names={
+fajr:"الفجر",
+dhuhr:"الظهر",
+asr:"العصر",
+maghrib:"المغرب",
+isha:"العشاء"
+};
 
 async function startPrayerSystem(client){
 
@@ -21,56 +38,120 @@ setInterval(async()=>{
 
 try{
 
-const res=await axios.get(API);
-const t=res.data.data.timings;
+const r=
+await axios.get(API);
+
+const t=
+r.data.data.timings;
 
 const list=[
-["fajr",t.Fajr],
-["dhuhr",t.Dhuhr],
-["asr",t.Asr],
-["maghrib",t.Maghrib],
-["isha",t.Isha]
+["fajr",hhmm(t.Fajr)],
+["dhuhr",hhmm(t.Dhuhr)],
+["asr",hhmm(t.Asr)],
+["maghrib",hhmm(t.Maghrib)],
+["isha",hhmm(t.Isha)]
 ];
 
-const now=new Date();
+const now=
+new Date();
 
-const day=now.toDateString();
-if(todayReset!==day){
-todayReset=day;
-last=null;
-}
+const key=
+now.toDateString();
 
-const next=list.find(p=>parse(p[1])>now);
-if(!next)return;
+if(!sent[key])
+sent[key]={};
 
-const [name]=next;
+const current=
+`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
 
-if(last===name)return;
-last=name;
+for(const [id,time] of list){
 
-const channel=client.channels.cache.find(c=>c.isTextBased());
-if(!channel)return;
+if(time!==current)
+continue;
 
-const embed=new EmbedBuilder()
+if(sent[key][id])
+continue;
+
+sent[key][id]=true;
+
+const ch=
+await client.channels.fetch(CHANNEL);
+
+const row=
+new ActionRowBuilder()
+
+.addComponents(
+
+new ButtonBuilder()
+.setCustomId(`pray_${id}`)
+.setLabel(`صلاة ${names[id]}`)
+.setStyle(
+ButtonStyle.Secondary
+),
+
+new ButtonBuilder()
+.setCustomId("azkar")
+.setLabel("اذكار الصلاة")
+.setStyle(
+ButtonStyle.Secondary
+)
+
+);
+
+const embed=
+new EmbedBuilder()
+
 .setColor("#FFD700")
+
 .setAuthor({
-name:"مُـــذَكّــــــر | مواعـــيد الصــــلاة"
+name:
+"مُـــذَكّــــــر | مواعـــيد الصــــلاة",
+iconURL:
+ICON
 })
-.setTitle(`حان موعد صلاة ${name} حسب التوقيت المحلي لمدينة الدار البيضاء`)
-.setDescription(`الأذان الآن لصلاة ${name}`)
+
+.setTitle(
+`حان موعد صلاة ${names[id]} حسب التوقيت المحلي لمدينة الدار البيضاء`
+)
+
+.setDescription(
+"قال الله تعالى\n\n**(الآية تؤخذ من prayers.js كما ثبتناه سابقاً)**"
+)
+
 .setFooter({
-text:"4KO • YONKO.مُـــذَكّــــــر"
+text:
+"4KO • YONKO.مُـــذَكّــــــر",
+iconURL:
+ICON
 })
+
 .setTimestamp();
 
-channel.send({embeds:[embed]});
+await ch.send({
+
+embeds:[
+embed
+],
+
+components:[
+row
+]
+
+});
+
+}
 
 }catch(e){
-console.log("Prayer error:",e.message);
+
+console.log(
+e.message
+);
+
 }
 
-},60000);
+},30000);
 
 }
 
-module.exports=startPrayerSystem;
+module.exports=
+startPrayerSystem;
