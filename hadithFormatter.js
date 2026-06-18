@@ -1,6 +1,6 @@
 const { EmbedBuilder }=require("discord.js");
 
-module.exports=function(h,color="#FFA500",icon){
+module.exports=function(h,color,icon){
 
 let text=`🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
 
@@ -12,9 +12,15 @@ text+=`\n\n📖 ➤ بيان: ${h.bayan}`;
 }
 
 return new EmbedBuilder()
-.setColor(color)
-.setAuthor({name:"مُـــذَكّــــــر",iconURL:icon})
+.setColor(color || "#FFA500")
+.setAuthor({
+name:"مُـــذَكّــــــر",
+iconURL:icon
+})
 .setDescription(text)
-.setFooter({text:"4KO • YONKO.مُـــذَكّــــــر",iconURL:icon})
+.setFooter({
+text:"4KO • YONKO.مُـــذَكّــــــر",
+iconURL:icon
+})
 .setTimestamp();
 };
