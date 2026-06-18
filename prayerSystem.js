@@ -1,19 +1,17 @@
 const axios=require("axios");
 const { EmbedBuilder }=require("discord.js");
 
-const API=
-"https://api.aladhan.com/v1/timingsByCity?city=Casablanca&country=Morocco&method=21";
+const API="https://api.aladhan.com/v1/timingsByCity?city=Casablanca&country=Morocco&method=21";
 
-let lastSent=null;
-let lastDate="";
+let last=null;
+let todayReset="";
 
-function toDate(t){
+function parse(t){
 const [h,m]=t.split(":");
 const d=new Date();
 d.setHours(+h);
 d.setMinutes(+m);
 d.setSeconds(0);
-d.setMilliseconds(0);
 return d;
 }
 
@@ -26,7 +24,7 @@ try{
 const res=await axios.get(API);
 const t=res.data.data.timings;
 
-const prayers=[
+const list=[
 ["fajr",t.Fajr],
 ["dhuhr",t.Dhuhr],
 ["asr",t.Asr],
@@ -35,28 +33,24 @@ const prayers=[
 ];
 
 const now=new Date();
-const today=now.toDateString();
 
-// reset يومي
-if(lastDate!==today){
-lastDate=today;
-lastSent=null;
+const day=now.toDateString();
+if(todayReset!==day){
+todayReset=day;
+last=null;
 }
 
-const next=prayers.find(p=>toDate(p[1])>now);
+const next=list.find(p=>parse(p[1])>now);
 if(!next)return;
 
-const [name,time]=next;
+const [name]=next;
 
-// منع التكرار
-if(lastSent===name)return;
-lastSent=name;
+if(last===name)return;
+last=name;
 
-// قناة (عدّلها لو تريد)
 const channel=client.channels.cache.find(c=>c.isTextBased());
 if(!channel)return;
 
-// 🔥 Embed الصلاة (حسب طلبك: أصفر)
 const embed=new EmbedBuilder()
 .setColor("#FFD700")
 .setAuthor({
