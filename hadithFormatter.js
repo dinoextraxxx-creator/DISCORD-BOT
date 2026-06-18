@@ -1,49 +1,33 @@
-/**
- * 📖 hadithFormatter.js
- * مسؤول عن تحويل الحديث إلى شكل العرض النهائي داخل Discord
- * - تنسيق موحد
- * - دعم البيان عند الحاجة
- * - مسافات واضحة بين الفقرات
- * - دعم الحديث القدسي (قال الله تعالى)
- */
+const { EmbedBuilder } = require("discord.js");
 
-function formatHadith(hadith) {
-  let message = "";
+module.exports = function formatHadith(h) {
 
-  // 🔷 التحقق من الحديث القدسي (اختياري لو أضفت flag لاحقًا)
-  const isQudsi = hadith.isQudsi === true;
+let body = "";
 
-  /**
-   * 🔸 السطر الأول (نص الحديث)
-   */
-  if (isQudsi) {
-    message += `🔸 ➤ **قال رسول الله ﷺ: قال الله تعالى:** «${hadith.text}»\n\n`;
-  } else {
-    message += `🔸 ➤ **قال رسول الله ﷺ:** «${hadith.text}»\n\n`;
-  }
+body += `🔸 ➤ قال رسول الله ﷺ: «${h.text}»`;
 
-  /**
-   * 👤 الراوي
-   */
-  message += `👤 ➤ **الراوي:** ${hadith.rawi}\n\n`;
+body += `\n\n👤 ➤ الراوي: ${h.rawi}`;
 
-  /**
-   * 📚 المصدر
-   */
-  message += `📚 ➤ **المصدر:** ${hadith.source}\n\n`;
+body += `\n\n📚 ➤ المصدر: ${h.source}`;
 
-  /**
-   * 🕯️ البيان (يظهر فقط عند الحاجة)
-   * - يتم عرضه فقط إذا كان موجودًا
-   * - يكون مختصر جدًا
-   */
-  if (hadith.bayan && hadith.bayan.trim() !== "") {
-    message += `🕯️ ➤ **بيان:** ${hadith.bayan}\n\n`;
-  }
-
-  return message;
+if (h.bayan) {
+body += `\n\n📖 ➤ بيان: ${h.bayan}`;
 }
 
-module.exports = {
-  formatHadith
+return new EmbedBuilder()
+
+.setColor("#FFD700")
+
+.setAuthor({
+name:"مُـــذَكّــــــر"
+})
+
+.setDescription(body)
+
+.setFooter({
+text:"4KO • YONKO. مُـــذَكّــــــر"
+})
+
+.setTimestamp();
+
 };
