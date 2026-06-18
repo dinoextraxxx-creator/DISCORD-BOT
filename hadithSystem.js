@@ -1,70 +1,78 @@
-const fs = require("fs");
+const part1=require("./hadiths_part1");
+const part2=require("./hadiths_part2");
+const part3=require("./hadiths_part3");
+const part4=require("./hadiths_part4");
+const part5=require("./hadiths_part5");
+const part6=require("./hadiths_part6");
+const part7=require("./hadiths_part7");
+const part8=require("./hadiths_part8");
+const part9=require("./hadiths_part9");
+const part10=require("./hadiths_part10");
 
-let lastHadith = null;
+const { EmbedBuilder }=require("discord.js");
 
-function getAllHadiths() {
+let lastHadith=null;
 
-const parts = [];
-for (let i = 1; i <= 10; i++) {
-parts.push(require(`./parts/part${i}`));
+const ALL=[
+...part1,...part2,...part3,...part4,...part5,
+...part6,...part7,...part8,...part9,...part10
+];
+
+function randomHadith(){
+let h;
+do{
+h=ALL[Math.floor(Math.random()*ALL.length)];
+}while(lastHadith && h.text===lastHadith.text);
+
+lastHadith=h;
+return h;
 }
 
-return parts.flat();
-}
+// ⏰ أوقات الإرسال
+const TIMES=[
+"07:15",
+"12:00",
+"18:15",
+"21:30"
+];
 
-async function startHadithSystem(client, config = {}) {
+function startHadithSystem(client,{channelId,icon,color="#FF0000"}){
 
-const icon = config.icon;
-const color = config.color || "#FF0000";
+setInterval(()=>{
 
-const CHANNEL_ID = "1516016586643734639";
+const now=new Date();
+const hhmm=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
 
-setInterval(async () => {
+if(!TIMES.includes(hhmm))return;
 
-try {
+const channel=client.channels.cache.get(channelId);
+if(!channel)return;
 
-const all = getAllHadiths();
+const h=randomHadith();
 
-let hadith;
+const embed=new EmbedBuilder()
+.setColor(color)
+.setAuthor({
+name:"مُـــذَكّــــــر",
+iconURL:icon
+})
+.setTitle("حديث نبوي شريف")
+.setDescription(`🔸 قال رسول الله ﷺ:
+«${h.text}»
 
-do {
-hadith = all[Math.floor(Math.random() * all.length)];
-} while (hadith.text === lastHadith);
+👤 الراوي : ${h.rawi}
+📚 المصدر : ${h.source}
+📖 بيان : ${h.bayan || "—"}`)
+.setFooter({
+text:"4KO • YONKO.مُـــذَكّــــــر",
+iconURL:icon
+})
+.setTimestamp();
 
-lastHadith = hadith.text;
+channel.send({embeds:[embed]});
 
-const channel = await client.channels.fetch(CHANNEL_ID);
-if (!channel) return;
-
-channel.send({
-embeds: [
-{
-title: "حديث نبوي شريف",
-color: parseInt(color.replace("#", ""), 16),
-author: {
-name: "مُـــذَكّــــــر",
-icon_url: icon
-},
-description:
-`🔸 قال رسول الله ﷺ:\n«${hadith.text}»\n\n` +
-`👤 الراوي : ${hadith.rawi}\n` +
-`📚 المصدر : ${hadith.source}\n` +
-(hadith.bayan ? `\n📖 بيان : ${hadith.bayan}` : ""),
-footer: {
-text: "4KO • YONKO.مُـــذَكّــــــر",
-icon_url: icon
-},
-timestamp: new Date()
-}
-]
-});
-
-} catch (e) {
-console.log("Hadith error:", e.message);
-}
-
-}, 1000 * 60 * 60 * 24 / 4); // تقريبي 4 مرات يومياً (حسب إعدادك السابق)
+},60000); // كل دقيقة
 
 }
 
-module.exports = startHadithSystem;
+module.exports=startHadithSystem;
