@@ -1,80 +1,70 @@
-const formatter=require("./hadithFormatter");
+const fs = require("fs");
 
-const CHANNEL_ID="1516016586643734639";
+let lastHadith = null;
 
-const SCHEDULE=[
-{h:7,m:15},
-{h:12,m:0},
-{h:18,m:15},
-{h:21,m:30}
-];
+function getAllHadiths() {
 
-const parts=[
-require("./hadiths_part1"),
-require("./hadiths_part2"),
-require("./hadiths_part3"),
-require("./hadiths_part4"),
-require("./hadiths_part5"),
-require("./hadiths_part6"),
-require("./hadiths_part7"),
-require("./hadiths_part8"),
-require("./hadiths_part9"),
-require("./hadiths_part10")
-];
-
-const hadiths=parts.flat();
-
-module.exports=(client,options={})=>{
-
-const icon=options.icon;
-const color=options.color;
-
-let last=-1;
-let sent=new Set();
-
-function randomHadith(){
-let i;
-do{
-i=Math.floor(Math.random()*hadiths.length);
-}while(i===last && hadiths.length>1);
-last=i;
-return hadiths[i];
+const parts = [];
+for (let i = 1; i <= 10; i++) {
+parts.push(require(`./parts/part${i}`));
 }
 
-async function sendHadith(){
-const channel=await client.channels.fetch(CHANNEL_ID);
-if(!channel)return;
+return parts.flat();
+}
 
-await channel.send({
-embeds:[formatter(randomHadith(),color,icon)]
+async function startHadithSystem(client, config = {}) {
+
+const icon = config.icon;
+const color = config.color || "#FF0000";
+
+const CHANNEL_ID = "1516016586643734639";
+
+setInterval(async () => {
+
+try {
+
+const all = getAllHadiths();
+
+let hadith;
+
+do {
+hadith = all[Math.floor(Math.random() * all.length)];
+} while (hadith.text === lastHadith);
+
+lastHadith = hadith.text;
+
+const channel = await client.channels.fetch(CHANNEL_ID);
+if (!channel) return;
+
+channel.send({
+embeds: [
+{
+title: "حديث نبوي شريف",
+color: parseInt(color.replace("#", ""), 16),
+author: {
+name: "مُـــذَكّــــــر",
+icon_url: icon
+},
+description:
+`🔸 قال رسول الله ﷺ:\n«${hadith.text}»\n\n` +
+`👤 الراوي : ${hadith.rawi}\n` +
+`📚 المصدر : ${hadith.source}\n` +
+(hadith.bayan ? `\n📖 بيان : ${hadith.bayan}` : ""),
+footer: {
+text: "4KO • YONKO.مُـــذَكّــــــر",
+icon_url: icon
+},
+timestamp: new Date()
+}
+]
 });
+
+} catch (e) {
+console.log("Hadith error:", e.message);
 }
 
-// 🧠 مهم: لا يعمل قبل جاهزية البوت
-function check(){
+}, 1000 * 60 * 60 * 24 / 4); // تقريبي 4 مرات يومياً (حسب إعدادك السابق)
 
-if(!client.isReady()) return;
-
-const now=new Date();
-const time=new Date(now.toLocaleString("en-US",{timeZone:"Africa/Casablanca"}));
-
-const h=time.getHours();
-const m=time.getMinutes();
-
-const key=`${h}:${m}`;
-
-if(sent.has(key)) return;
-
-for(const s of SCHEDULE){
-if(s.h===h && s.m===m){
-sendHadith();
-sent.add(key);
-}
-}
 }
 
-setInterval(check,60000);
-setInterval(()=>sent.clear(),86400000);
-
-console.log("Hadith system locked & running");
-};
+module.exports = startHadithSystem;
