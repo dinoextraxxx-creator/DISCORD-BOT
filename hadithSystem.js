@@ -18,14 +18,22 @@ const ALL=[
 
 let last=null;
 
-function pick(){
+function random(){
 
 let h;
 
 do{
-h=ALL[Math.floor(Math.random()*ALL.length)];
+h=
+ALL[
+Math.floor(
+Math.random()*ALL.length
+)
+];
 }
-while(last && h.text===last.text);
+while(
+last &&
+h.text===last.text
+);
 
 last=h;
 
@@ -44,7 +52,10 @@ if(!channel)return;
 
 async function send(){
 
-const h=pick();
+try{
+
+const h=
+random();
 
 const embed=
 format(
@@ -54,21 +65,35 @@ opt.icon
 );
 
 await channel.send({
-embeds:[embed]
+embeds:[
+embed
+]
 });
+
+}catch(e){
+
+console.log(
+"Hadith:",
+e.message
+);
 
 }
 
-setTimeout(()=>{
+}
 
-send();
+// ✅ يرسل أول حديث مباشرة
+await send();
 
+// ثم كل ساعتين ونصف
 setInterval(
-send,
-150*60*1000
-);
 
-},150*60*1000);
+send,
+
+150*
+60*
+1000
+
+);
 
 }
 
