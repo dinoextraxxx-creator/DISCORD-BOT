@@ -6,18 +6,16 @@ EmbedBuilder
 }=require("discord.js");
 
 const startPrayerSystem=require("./prayerSystem");
-const startHadithSystem=require("./hadithSystem"); // 🟢 الجديد
+const startHadithSystem=require("./hadithSystem");
 const PRAYER_DETAILS=require("./prayers");
 
 const client=new Client({
 intents:[GatewayIntentBits.Guilds]
 });
 
-// 🟢 أيقونة موحدة
 const ICON=
 "https://cdn.discordapp.com/attachments/1515161056975126705/1516909922040811610/-_4.jpg";
 
-// 🟢 أذكار الأذان
 const AZKAR=`
 1- يقول مثل ما يقول المؤذن إلا في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
 
@@ -33,14 +31,14 @@ const AZKAR=`
 client.once(Events.ClientReady,async()=>{
 console.log("BOT READY");
 
-// 🟢 تشغيل نظام الصلاة
+// الصلاة
 try{
 await startPrayerSystem(client);
 }catch(e){
 console.log("Prayer system error:",e);
 }
 
-// 🟢 تشغيل نظام الأحاديث (الجديد)
+// الأحاديث
 try{
 await startHadithSystem(client);
 }catch(e){
@@ -55,7 +53,7 @@ if(!i.isButton())return;
 
 try{
 
-// 🟢 زر الصلاة
+// زر الصلاة
 if(i.customId.startsWith("pray_")){
 
 const prayer=i.customId.replace("pray_","");
@@ -79,7 +77,7 @@ iconURL:ICON
 });
 }
 
-// 🟢 زر الأذكار
+// زر الأذكار
 if(i.customId==="azkar"){
 
 return i.reply({
@@ -103,13 +101,9 @@ iconURL:ICON
 }
 
 }catch(err){
-console.log("Interaction error:",err);
-
+console.log(err);
 if(!i.replied){
-return i.reply({
-ephemeral:true,
-content:"حدث خطأ في البوت"
-});
+i.reply({ephemeral:true,content:"خطأ"});
 }
 }
 
