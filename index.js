@@ -6,16 +6,18 @@ EmbedBuilder
 }=require("discord.js");
 
 const startPrayerSystem=require("./prayerSystem");
+const startHadithSystem=require("./hadithSystem"); // 🟢 الجديد
 const PRAYER_DETAILS=require("./prayers");
 
 const client=new Client({
 intents:[GatewayIntentBits.Guilds]
 });
 
-// 🟢 أيقونة موحدة جديدة (التي طلبتها)
+// 🟢 أيقونة موحدة
 const ICON=
 "https://cdn.discordapp.com/attachments/1515161056975126705/1516909922040811610/-_4.jpg";
 
+// 🟢 أذكار الأذان
 const AZKAR=`
 1- يقول مثل ما يقول المؤذن إلا في "حي على الصلاة و حي على الفلاح" فيقول "لا حول ولا قوة إلا بالله"
 
@@ -31,10 +33,18 @@ const AZKAR=`
 client.once(Events.ClientReady,async()=>{
 console.log("BOT READY");
 
+// 🟢 تشغيل نظام الصلاة
 try{
 await startPrayerSystem(client);
 }catch(e){
 console.log("Prayer system error:",e);
+}
+
+// 🟢 تشغيل نظام الأحاديث (الجديد)
+try{
+await startHadithSystem(client);
+}catch(e){
+console.log("Hadith system error:",e);
 }
 
 });
@@ -54,7 +64,7 @@ return i.reply({
 ephemeral:true,
 embeds:[
 new EmbedBuilder()
-.setColor("#00FF66") // 🟢 أخضر
+.setColor("#00FF66")
 .setAuthor({
 name:"مُـــذَكّــــــر",
 iconURL:ICON
@@ -76,7 +86,7 @@ return i.reply({
 ephemeral:true,
 embeds:[
 new EmbedBuilder()
-.setColor("#00FF66") // 🟢 أخضر
+.setColor("#00FF66")
 .setAuthor({
 name:"مُـــذَكّــــــر",
 iconURL:ICON
