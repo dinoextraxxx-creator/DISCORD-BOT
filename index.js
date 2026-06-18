@@ -1,8 +1,7 @@
 const {
 Client,
 GatewayIntentBits,
-Events,
-EmbedBuilder
+Events
 }=require("discord.js");
 
 const startPrayerSystem=require("./prayerSystem");
@@ -13,6 +12,7 @@ const client=new Client({
 intents:[GatewayIntentBits.Guilds]
 });
 
+// 🟠 أيقونة موحدة (ثابتة)
 const ICON=
 "https://cdn.discordapp.com/attachments/1515161056975126705/1515903883430465647/-_1.jpg";
 
@@ -31,59 +31,12 @@ const AZKAR=`
 client.once(Events.ClientReady,async()=>{
 console.log("BOT READY");
 
-try{await startPrayerSystem(client);}catch(e){console.log(e);}
-try{
+await startPrayerSystem(client);
+
 await startHadithSystem(client,{
 icon:ICON,
 color:"#FFA500"
 });
-}catch(e){console.log(e);}
-});
-
-client.on(Events.InteractionCreate,async(i)=>{
-
-if(!i.isButton())return;
-
-try{
-
-if(i.customId.startsWith("pray_")){
-const prayer=i.customId.replace("pray_","");
-
-return i.reply({
-ephemeral:true,
-embeds:[
-new EmbedBuilder()
-.setColor("#00FF66")
-.setAuthor({name:"مُـــذَكّــــــر",iconURL:ICON})
-.setDescription(PRAYER_DETAILS?.[prayer]||"لا توجد بيانات")
-.setFooter({text:"4KO • YONKO.مُـــذَكّــــــر",iconURL:ICON})
-.setTimestamp()
-]
-});
-}
-
-if(i.customId==="azkar"){
-return i.reply({
-ephemeral:true,
-embeds:[
-new EmbedBuilder()
-.setColor("#00FF66")
-.setAuthor({name:"مُـــذَكّــــــر",iconURL:ICON})
-.setTitle("اذكـــــــار الصــــلاة")
-.setDescription(AZKAR)
-.setFooter({text:"4KO • YONKO.مُـــذَكّــــــر",iconURL:ICON})
-.setTimestamp()
-]
-});
-}
-
-}catch(err){
-console.log(err);
-if(!i.replied){
-i.reply({ephemeral:true,content:"خطأ"});
-}
-}
-
 });
 
 client.login(process.env.TOKEN);
