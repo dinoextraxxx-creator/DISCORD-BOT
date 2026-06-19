@@ -22,6 +22,28 @@ function hhmm(t) {
   return t.split(" ")[0].replace(/\(.*/, "").slice(0, 5);
 }
 
+// ✅ الوقت الحالي بتوقيت الدار البيضاء بالضبط (يحل مشكلة UTC)
+function nowInCasablanca() {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Casablanca",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date());
+
+  const h = parts.find((p) => p.type === "hour").value;
+  const m = parts.find((p) => p.type === "minute").value;
+
+  return `${h}:${m}`;
+}
+
+// ✅ تاريخ اليوم بتوقيت الدار البيضاء بالضبط
+function todayInCasablanca() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Casablanca"
+  }).format(new Date()); // مثال: 2026-06-19
+}
+
 async function fetchTimings() {
   const r = await axios.get(API, { timeout: 10000 });
   const t = r.data.data.timings;
@@ -35,15 +57,15 @@ async function fetchTimings() {
 }
 
 async function ensureToday() {
-  const today = new Date().toDateString();
+  const today = todayInCasablanca();
 
   if (cache.date !== today) {
     try {
       cache.timings = await fetchTimings();
       cache.date = today;
+      console.log("Prayer timings updated for", today, cache.timings);
     } catch (e) {
       console.log("Prayer API fetch failed:", e.message);
-      // يحاول مجدداً في الدورة القادمة بدون تحديث cache.date
       return null;
     }
   }
@@ -61,10 +83,7 @@ async function startPrayerSystem(client) {
       const timings = await ensureToday();
       if (!timings) return;
 
-      const now = new Date();
-      const current = `${String(now.getHours()).padStart(2, "0")}:${String(
-        now.getMinutes()
-      ).padStart(2, "0")}`;
+      const current = nowInCasablanca();
 
       for (const id of Object.keys(timings)) {
         if (timings[id] !== current) continue;
