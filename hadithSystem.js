@@ -1,101 +1,52 @@
-const format=require("./hadithFormatter");
+const format = require("./hadithFormatter");
 
-const p1=require("./hadiths_part1");
-const p2=require("./hadiths_part2");
-const p3=require("./hadiths_part3");
-const p4=require("./hadiths_part4");
-const p5=require("./hadiths_part5");
-const p6=require("./hadiths_part6");
-const p7=require("./hadiths_part7");
-const p8=require("./hadiths_part8");
-const p9=require("./hadiths_part9");
-const p10=require("./hadiths_part10");
-
-const ALL=[
-...p1,...p2,...p3,...p4,...p5,
-...p6,...p7,...p8,...p9,...p10
+const groups = [
+  require("./hadiths_part1"),
+  require("./hadiths_part2"),
+  require("./hadiths_part3"),
+  require("./hadiths_part4"),
+  require("./hadiths_part5"),
+  require("./hadiths_part6"),
+  require("./hadiths_part7"),
+  require("./hadiths_part8"),
+  require("./hadiths_part9"),
+  require("./hadiths_part10")
 ];
 
-let last=null;
+let lastGroup = -1;
 
-function random(){
+function pickHadith() {
+  let groupIndex;
 
-let h;
+  do {
+    groupIndex = Math.floor(Math.random() * groups.length);
+  } while (groupIndex === lastGroup && groups.length > 1);
 
-do{
-h=
-ALL[
-Math.floor(
-Math.random()*ALL.length
-)
-];
-}
-while(
-last &&
-h.text===last.text
-);
+  lastGroup = groupIndex;
 
-last=h;
+  const group = groups[groupIndex];
+  const hadith = group[Math.floor(Math.random() * group.length)];
 
-return h;
-
+  return hadith;
 }
 
-async function startHadithSystem(client,opt){
+async function startHadithSystem(client, opt) {
+  const channel = await client.channels.fetch(opt.channelId);
+  if (!channel) return;
 
-const channel=
-await client.channels.fetch(
-opt.channelId
-);
+  async function send() {
+    try {
+      const h = pickHadith();
+      const embed = format(h, opt.color, opt.icon);
+      await channel.send({ embeds: [embed] });
+    } catch (e) {
+      console.log("Hadith send error:", e.message);
+    }
+  }
 
-if(!channel)return;
+  await send(); // أول حديث فور التشغيل
 
-async function send(){
-
-try{
-
-const h=
-random();
-
-const embed=
-format(
-h,
-opt.color,
-opt.icon
-);
-
-await channel.send({
-embeds:[
-embed
-]
-});
-
-}catch(e){
-
-console.log(
-"Hadith:",
-e.message
-);
-
+  setInterval(send, 2 * 60 * 60 * 1000); // كل ساعتين بالضبط
 }
 
-}
-
-// ✅ يرسل أول حديث مباشرة
-await send();
-
-// ثم كل ساعتين ونصف
-setInterval(
-
-send,
-
-150*
-60*
-1000
-
-);
-
-}
-
-module.exports=
-startHadithSystem;
+module.exports = startHadithSystem;
