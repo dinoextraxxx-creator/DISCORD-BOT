@@ -22,7 +22,6 @@ function hhmm(t) {
   return t.split(" ")[0].replace(/\(.*/, "").slice(0, 5);
 }
 
-// ✅ الوقت الحالي بتوقيت الدار البيضاء بالضبط (يحل مشكلة UTC)
 function nowInCasablanca() {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Casablanca",
@@ -37,11 +36,10 @@ function nowInCasablanca() {
   return `${h}:${m}`;
 }
 
-// ✅ تاريخ اليوم بتوقيت الدار البيضاء بالضبط
 function todayInCasablanca() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Casablanca"
-  }).format(new Date()); // مثال: 2026-06-19
+  }).format(new Date());
 }
 
 async function fetchTimings() {
@@ -113,7 +111,7 @@ async function startPrayerSystem(client) {
           .setTitle(
             `حان موعد أذان صلاة ${p.name} حسب التوقيت المحلي لمدينة الدار البيضاء`
           )
-          .setDescription(`**${p.name}**\n🕐 ${timings[id]}\n${p.verse}`)
+          .setDescription(`• قال الله تعالى :\n\n**${p.verse}**`)
           .setFooter({
             text: "موعد الأذان قد يتغير من مدينة لأخرى",
             iconURL: ICON
