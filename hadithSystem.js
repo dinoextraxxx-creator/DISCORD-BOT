@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const format = require("./hadithFormatter");
 
 const groups = [
@@ -23,7 +25,27 @@ const groups = [
   require("./hadiths_part20")
 ];
 
+const STATE_FILE = path.join(__dirname, "hadith_state.json");
+const TWO_HOURS = 2 * 60 * 60 * 1000;
+
 let lastGroup = -1;
+
+function loadState() {
+  try {
+    const raw = fs.readFileSync(STATE_FILE, "utf8");
+    return JSON.parse(raw);
+  } catch (e) {
+    return { lastSent: 0 };
+  }
+}
+
+function saveState(state) {
+  try {
+    fs.writeFileSync(STATE_FILE, JSON.stringify(state));
+  } catch (e) {
+    console.log("Hadith state save error:", e.message);
+  }
+}
 
 function pickHadith() {
   let groupIndex;
@@ -49,14 +71,27 @@ async function startHadithSystem(client, opt) {
       const h = pickHadith();
       const embed = format(h, opt.color, opt.icon);
       await channel.send({ embeds: [embed] });
+      saveState({ lastSent: Date.now() });
     } catch (e) {
       console.log("Hadith send error:", e.message);
     }
   }
 
-  await send();
+  const state = loadState();
+  const elapsed = Date.now() - (state.lastSent || 0);
 
-  setInterval(send, 2 * 60 * 60 * 1000);
+  if (elapsed >= TWO_HOURS) {
+    // مر وقت كافٍ منذ آخر إرسال → يرسل الآن
+    await send();
+  } else {
+    console.log(
+      `Hadith: skipping immediate send, last one was ${Math.round(
+        elapsed / 60000
+      )} minutes ago`
+    );
+  }
+
+  setInterval(send, TWO_HOURS);
 }
 
 module.exports = startHadithSystem;
