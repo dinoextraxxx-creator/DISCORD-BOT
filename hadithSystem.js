@@ -10,7 +10,17 @@ const groups = [
   require("./hadiths_part7"),
   require("./hadiths_part8"),
   require("./hadiths_part9"),
-  require("./hadiths_part10")
+  require("./hadiths_part10"),
+  require("./hadiths_part11"),
+  require("./hadiths_part12"),
+  require("./hadiths_part13"),
+  require("./hadiths_part14"),
+  require("./hadiths_part15"),
+  require("./hadiths_part16"),
+  require("./hadiths_part17"),
+  require("./hadiths_part18"),
+  require("./hadiths_part19"),
+  require("./hadiths_part20")
 ];
 
 let lastGroup = -1;
@@ -44,9 +54,9 @@ async function startHadithSystem(client, opt) {
     }
   }
 
-  await send(); // أول حديث فور التشغيل
+  await send();
 
-  setInterval(send, 2 * 60 * 60 * 1000); // كل ساعتين بالضبط
+  setInterval(send, 2 * 60 * 60 * 1000);
 }
 
 module.exports = startHadithSystem;
